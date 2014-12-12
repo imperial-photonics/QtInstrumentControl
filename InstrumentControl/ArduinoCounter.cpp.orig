@@ -1,0 +1,262 @@
+#include "ArduinoCounter.h"
+
+#include <QApplication>
+#include <QSerialPortInfo>
+#include <QThread>
+
+#include <iostream>
+#include <cstdint>
+
+using namespace std;
+
+
+SerialDevice::SerialDevice(QObject *parent) :
+   QObject(parent),
+   connected(false)
+{
+   serial_port = new QSerialPort(this);
+
+   // Setup reconnection timer
+   connection_timer = new QTimer(this);
+   connection_timer->setInterval(2000);
+   connection_timer->setSingleShot(true);
+   connect(connection_timer, &QTimer::timeout, this, &SerialDevice::Connect);
+}
+
+void SerialDevice::Connect()
+{
+
+   QList<QSerialPortInfo> ports = QSerialPortInfo::availablePorts();
+
+   for (auto port : ports)
+   {
+      std::string description = port.description().toStdString();
+      std::string manufacturer = port.manufacturer().toStdString();
+
+      if (port_description.isEmpty() || port.description() == port_description)
+      {
+         // Try to connect, return if we succesfully connected
+         // otherwise try to reset the Arduino
+         if (ConnectToDevice(port.portName()))
+            return;
+<<<<<<< HEAD
+=======
+         //else
+            //resetArduino(port.portName());
+>>>>>>> fadd1d31d9cdc838466cfaeb931fca301b181ccb
+      }
+   }
+
+   // Couldn't connect, try autoconnection later
+   connection_timer->start();
+   NewMessage("Could not connect to Arduino.");
+}
+
+void ArduinoCounter::ResetDevice(QString& port_name)
+{
+   // Reset Arduino by connected and disconnecting
+   // with baud rate 1200
+
+   QString m("Trying to reset Arduino on port: ");
+   m.append(port_name);
+   NewMessage(m);
+
+   QSerialPort port;
+   port.setPortName(port_name);
+   port.setFlowControl(QSerialPort::HardwareControl);
+   port.setReadBufferSize(1000000);
+   port.setBaudRate(1200);
+
+   port.open(QIODevice::ReadWrite);
+   port.close();
+
+<<<<<<< HEAD
+=======
+   QThread::msleep(1000); // let arduino reset
+>>>>>>> fadd1d31d9cdc838466cfaeb931fca301b181ccb
+}
+
+bool SerialDevice::OpenSerialPort(QString& port, QSerialPort::FlowControl flow_control, int baud_rate)
+{
+   if (serial_port != nullptr)
+      delete serial_port;
+   serial_port = new QSerialPort(this);
+
+   serial_port->setPortName(port);
+   serial_port->setFlowControl(flow_control);
+   serial_port->setBaudRate(baud_rate);
+
+   serial_port->setReadBufferSize(1000000);
+
+   if (serial_port->open(QIODevice::ReadWrite) == false)
+      return false;
+
+   connect(serial_port, static_cast<void (QSerialPort::*)(QSerialPort::SerialPortError)>(&QSerialPort::error), this, &SerialDevice::ErrorOccurred);
+   connect(serial_port, &QSerialPort::aboutToClose, this, &SerialDevice::Disconnected);
+
+   return true;
+}
+
+/*
+   Get a response from the device to a command string. 
+
+   This isn't super efficent so shouldn't be called in a tight loop.
+   Useful for identification etc.
+*/
+QString SerialDevice::ResponseFromCommand(const char command[])
+{
+   const int buf_len = 50;
+
+   // Try and identify device;
+   serial_port->write(command);
+   serial_port->flush();
+
+   // Setup a buffer for reading
+   char buffer[buf_len];
+   buffer[0] = 0;
+
+   // Try and read a line
+   serial_port->waitForReadyRead(1000);
+   serial_port->readLine(buffer, buf_len);
+
+   return QString(buffer);
+}
+
+bool ArduinoCounter::ConnectToDevice(QString& port)
+{
+   QString m("Trying to connect to Arduino on port: ");
+   m.append(port);
+   NewMessage(m);
+
+   // Try and open serial port
+   if (!OpenSerialPort(port, QSerialPort::HardwareControl, QSerialPort::Baud9600))
+      return false;
+
+   // Check that arduino identifies correctly
+   if (ResponseFromCommand("I") != "Photon Counter\n")
+   {
+      serial_port->close();
+      return false;
+   }
+
+   connect(serial_port, &QSerialPort::readyRead, this, &ArduinoCounter::ReadData);
+   connected = true;
+
+   SetDwellTime(dwell_time_ms);
+
+   emit NewMessage("Connected to Arduino.");
+   return true;
+
+}
+
+void ArduinoCounter::SetDwellTime(double dwell_time_ms_)
+{
+   // Enforce minimum dwell time
+   if (dwell_time_ms_ < 1)
+      return;
+
+   dwell_time_ms = dwell_time_ms_;
+   SendCommand("P", dwell_time_ms * 1000);
+}
+
+void ArduinoCounter::SetPMTEnabled(bool enabled)
+{
+   if (!connected)
+   {
+      emit PMTEnabled(false);
+      return;
+   }
+
+   if (enabled)
+      SendCommand("E1");
+   else
+      SendCommand("E0");
+
+   // need some kind of feedback here really
+   emit PMTEnabled(enabled);
+}
+
+void ArduinoCounter::SendCommand(char command[], float value)
+{   
+   if (!connected)
+      return;
+
+   // Write to arduino
+   QByteArray b;
+   b.append(command);
+
+   if (!isnan(value)) // not NAN
+      b.append((char*)&value, sizeof(value));
+
+   serial_port->write(b);
+   serial_port->flush();
+}
+
+void ArduinoCounter::GetCount()
+{
+   if (!connected)
+      return;
+
+   serial_port->write("X");
+}
+
+void SerialDevice::ErrorOccurred(QSerialPort::SerialPortError error)
+{
+   // Display error message
+   cout << serial_port->errorString().toStdString() << "\n";
+   emit NewMessage(serial_port->errorString());
+
+   int err = serial_port->error();
+
+   // If we couldn't write close and try to connect again
+   // Probably means the Arduino was disconnected
+   if (err == QSerialPort::WriteError || err == QSerialPort::DeviceNotFoundError)
+   {
+      serial_port->close();
+      connection_timer->start();
+   }
+
+}
+
+void SerialDevice::Disconnected()
+{
+   // Make sure we don't try to keep writing when disconnected.
+   emit NewMessage("Arduino disconnected.");
+   connected = false;
+}
+
+
+void ArduinoCounter::ReadData()
+{
+   QByteArray data = serial_port->readAll();
+   
+   const uint32_t* values = (const uint32_t*) (data.constData());
+   int n_values = data.size() / 4;
+
+   int byte = 0;
+   for (int i = 0; i < n_values; i++)
+   {
+      if (values[i] & 0x8000000000000000) // overload signal
+      {
+         emit OverloadOccured();
+         //values[i] = 0;
+      }
+   }
+
+   uint16_t v = values[n_values - 1] & ((1<<16)-1);
+
+   emit CountUpdated(v);
+
+   QString m("New Message: ");
+   m.append(data);
+
+   //emit NewMessage(m);
+}
+
+ArduinoCounter::~ArduinoCounter()
+{
+   if (!connected)
+      return;
+
+   serial_port->close();
+}
