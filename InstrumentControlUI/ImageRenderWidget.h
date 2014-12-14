@@ -1,8 +1,5 @@
 #pragma once
 
-#include "AndorCamera.h"
-
-#include <QGLWidget>
 #include <QPainter>
 #include <QImage>
 #include <QLabel>
@@ -13,6 +10,8 @@
 #include <QRgb>
 #include <QRect>
 #include <QStringList>
+
+#include "ImageSource.h"
 
 #include <stdint.h>
 #include <string>

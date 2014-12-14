@@ -37,7 +37,8 @@ void ThorlabsAPTController::GetDevices()
             printf(" ftHandle=0x%x\n", devInfo[i].ftHandle);
          }
       }
-   }
+   }
+
 
 }
 

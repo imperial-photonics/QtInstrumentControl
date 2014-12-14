@@ -1,4 +1,3 @@
-#include "AbstractStreamingCamera.h"
 
 /*
 #include <QFileDialog>
