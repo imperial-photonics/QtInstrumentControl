@@ -25,7 +25,7 @@ public:
       timer = new QTimer(this);
       
 
-      apt = new ThorlabsAPTController(this);
+      apt = new ThorlabsAPTController("TDC001", "PRM1-Z8", this);
 
       //counter = new ArduinoCounter(this);
       //stage = new NewportNSC200("NSR1", this);

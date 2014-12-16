@@ -20,6 +20,7 @@ set(SOURCE
    SerialDevice.cpp
    GenericNewportController.cpp
    ThorlabsAPTController.cpp
+   ImageSource.cpp
 )
 
 
@@ -33,14 +34,15 @@ set(HEADERS
    ThreadedObject.h
    FTD2XX.h
    ThorlabsAPTController.h
+   ImageSource.h
 )
 
 # manually add include directories since we're not linking libraries in
 # this module
 INCLUDE_DIRECTORIES(${Qt5Widgets_INCLUDE_DIRS} ${Qt5SerialPort_INCLUDE_DIRS})
 
-set(InstrumentControl_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR} PARENT_SCOPE)
 
 add_library(InstrumentControl OBJECT ${SOURCE} ${HEADERS} ${UI_HEADERS})
 
+set(InstrumentControl_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR} PARENT_SCOPE)
 set(InstrumentControl_LIBRARIES ${CMAKE_CURRENT_SOURCE_DIR}/ftd2xx.lib ${OpenCV_LIBS} PARENT_SCOPE)
