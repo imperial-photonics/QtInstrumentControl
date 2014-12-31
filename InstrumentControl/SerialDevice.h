@@ -15,7 +15,7 @@ class SerialDevice : public ThreadedObject
 
 public:
    SerialDevice(QObject *parent = 0);
-   virtual ~SerialDevice() {};
+   virtual ~SerialDevice();
 
    virtual void Init(); // called on startup
    void Connect();
@@ -24,13 +24,20 @@ public:
    virtual void ResetDevice(const QString& port) = 0;
 
 signals:
+   void Connected();
    void NewMessage(QString const& msg);
 
 protected:
 
    bool OpenSerialPort(const QString& port, QSerialPort::FlowControl flow_control, int baud_rate);
    QString ResponseFromCommand(const QByteArray& command);
-   
+
+   void SetConnected()
+   {
+      connected = true;
+      emit Connected();
+   }
+
    QByteArray ReadUntilTerminator(int timeout_ms);
    void WriteWithTerminator(const QByteArray& command);
 

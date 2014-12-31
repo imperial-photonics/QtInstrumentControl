@@ -17,6 +17,10 @@ connected(false)
 {
 }
 
+SerialDevice::~SerialDevice()
+{
+}
+
 void SerialDevice::Init()
 {
    serial_port = new QSerialPort(this);
@@ -40,10 +44,10 @@ void SerialDevice::Connect()
       std::string description = port.description().toStdString();
       std::string manufacturer = port.manufacturer().toStdString();
 
-      if (port_description.isEmpty() || port.description() == port_description)
+      if (!port.isBusy() && (port_description.isEmpty() || port.description() == port_description))
       {
          // Try to connect, return if we succesfully connected
-         if (!port.isBusy() && ConnectToDevice(port.portName()))
+         if (ConnectToDevice(port.portName()))
             return;
          //else
          //resetArduino(port.portName());
@@ -70,7 +74,7 @@ bool SerialDevice::OpenSerialPort(const QString& port, QSerialPort::FlowControl 
    serial_port->setFlowControl(flow_control);
    serial_port->setBaudRate(baud_rate);
 
-   serial_port->setReadBufferSize(1000000);
+   serial_port->setReadBufferSize(0);
 
    if (serial_port->open(QIODevice::ReadWrite) == false)
       return false;
@@ -100,7 +104,7 @@ void SerialDevice::WriteWithTerminator(const QByteArray& command)
 
    while (serial_port->waitForBytesWritten(100)) {};
 
-   std::cout << "Command: " << command.constData() << "\n";
+   //std::cout << "Command: " << command.constData() << "\n";
 }
 
 QByteArray SerialDevice::ReadUntilTerminator(int timeout_ms)
@@ -140,7 +144,7 @@ QByteArray SerialDevice::ReadUntilTerminator(int timeout_ms)
       }
    } while (something_read);
 
-   std::cout << "Response: " << data.constData() << "\n";
+   //std::cout << "Response: " << data.constData() << "\n";
 
    return data;
 }
@@ -150,8 +154,8 @@ void SerialDevice::ErrorOccurred(QSerialPort::SerialPortError error)
    QMutexLocker lk(&connection_mutex);
 
    // Display error message
-   cout << serial_port->errorString().toStdString() << "\n";
-   emit NewMessage(serial_port->errorString());
+   //cout << serial_port->errorString().toStdString() << "\n";
+   //emit NewMessage(serial_port->errorString());
 
    int err = serial_port->error();
 
@@ -160,7 +164,8 @@ void SerialDevice::ErrorOccurred(QSerialPort::SerialPortError error)
    if (err == QSerialPort::WriteError || err == QSerialPort::DeviceNotFoundError)
    {
       serial_port->close();
-      //connection_timer->start();
+      connected = false;
+      connection_timer->start();
    }
 
 }

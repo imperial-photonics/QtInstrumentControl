@@ -21,6 +21,12 @@ public:
       thread->start();
    }
 
+   virtual ~ThreadedObject()
+   {
+      if (thread->isRunning())
+         thread->wait();
+   }
+
    virtual void Init() {};
 
 protected:
