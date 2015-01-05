@@ -12,18 +12,17 @@ ArduinoCounter::ArduinoCounter(QObject *parent) :
    
 {
    port_description = "Arduino Due";
+
+   monitor_timer = new QTimer(this);
+   connect(monitor_timer, &QTimer::timeout, this, &ArduinoCounter::MonitorCount);
+   monitor_timer->start(100);
+
+   StartThread();
 }
 
 void ArduinoCounter::Init()
 {
    SerialDevice::Init();
-
-   monitor_timer = new QTimer(this);
-
-   connect(monitor_timer, &QTimer::timeout, this, &ArduinoCounter::MonitorCount);
-
-   monitor_timer->start(100);
-
 }
 
 void ArduinoCounter::MonitorCount()

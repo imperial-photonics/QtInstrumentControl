@@ -125,6 +125,8 @@ ThorlabsAPTController::ThorlabsAPTController(const QString& controller_type, con
       // see APT communications protocol document
       throw(std::exception("Unrecognised Thorlabs APT controller, only DC motors currently supported"));
    }
+
+   StartThread();
 }
 
 ThorlabsAPTController::~ThorlabsAPTController()
@@ -372,7 +374,7 @@ void ThorlabsAPTController::ResponseReader()
 
                case MGMSG_MOT_GET_ENCCOUNTER:
                   qint32 encoder;
-                  ds >> channel >> position;
+                  ds >> channel >> encoder;
                   break;
 
                case MGMSG_MOT_GET_VELPARAMS:

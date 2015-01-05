@@ -53,6 +53,7 @@ protected:
    static QMutex port_detection_mutex;
 
    bool connected;
+   bool shutdown;
 
    QByteArray terminator = "\r\n";
 

@@ -16,7 +16,10 @@ public:
       connect(thread, &QThread::started, this, &ThreadedObject::Init);
       connect(this, &QObject::destroyed, thread, &QThread::quit);
       connect(thread, &QThread::finished, thread, &QThread::deleteLater);
-      
+   }
+
+   void StartThread()
+   {
       this->moveToThread(thread);
       thread->start();
    }

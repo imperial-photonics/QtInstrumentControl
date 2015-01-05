@@ -13,12 +13,14 @@ QMutex SerialDevice::port_detection_mutex;
 SerialDevice::SerialDevice(QObject *parent) :
 ThreadedObject(parent),
 connection_mutex(QMutex::Recursive),
-connected(false)
+connected(false),
+shutdown(false)
 {
 }
 
 SerialDevice::~SerialDevice()
 {
+   shutdown = true;
 }
 
 void SerialDevice::Init()
@@ -161,12 +163,13 @@ void SerialDevice::ErrorOccurred(QSerialPort::SerialPortError error)
 
    // If we couldn't write close and try to connect again
    // Probably means the Arduino was disconnected
-   if (err == QSerialPort::WriteError || err == QSerialPort::DeviceNotFoundError)
-   {
-      serial_port->close();
-      connected = false;
-      connection_timer->start();
-   }
+   if (!shutdown)
+      if (err == QSerialPort::WriteError || err == QSerialPort::DeviceNotFoundError)
+      {
+         serial_port->close();
+         connected = false;
+         connection_timer->start();
+      }
 
 }
 
