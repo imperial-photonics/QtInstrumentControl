@@ -19,10 +19,11 @@
 // Triggering commands
 #define MSG_TRIGGER 0x10
 #define MSG_START_LINE 0x11
-#define MSG_START_FRAME 0x12
 
 #define MSG_PIXEL_DATA 0x20
 #define MSG_LINE_DATA 0x21
+#define MSG_LINE_FINISHED 0x22
+
 
 #define MODE_STREAMING  0x01
 #define MODE_ON_DEMAND  0x02
@@ -64,11 +65,11 @@ public:
    int GetPixelsPerLine() { return pixels_per_line; }
 
    void StartLine();
-   void StartFrame();
-
+   
 signals:
    void CountUpdated(int count);
    void NewLine(cv::Mat line);
+   void LineFinished();
    void PMTEnabled(bool endabled);
    void OverloadOccured();
 

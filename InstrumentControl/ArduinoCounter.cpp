@@ -130,14 +130,9 @@ void ArduinoCounter::SetPixelsPerLine(int pixels_per_line_)
    SendMessage(MSG_SET_NUM_PIXEL, pixels_per_line);
 }
 
-void ArduinoCounter::StartFrame()
-{
-   //SendMessage(MSG_START_FRAME);
-}
-
 void ArduinoCounter::StartLine()
 {
-   //SendMessage(MSG_START_LINE);
+   SendMessage(MSG_START_LINE);
 }
 
 void ArduinoCounter::SetPMTEnabled(bool enabled)
@@ -216,7 +211,7 @@ QByteArray ArduinoCounter::WaitForMessage(char msg, int timeout_ms)
       if (data.size() == packet_size)
       {
          QByteArray payload = ProcessMessage(data);
-         if (bytes_left_in_message > 0);
+         //if (bytes_left_in_message > 0);
          //data.append( ReadBytes() )
          if ((data[0] & 0x7F) == msg)
             return payload;
@@ -281,6 +276,10 @@ QByteArray ArduinoCounter::ProcessMessage(QByteArray data)
          cv::Mat line(1, n_px, CV_16U, payload.data());
 
          emit NewLine(line);
+      } break;
+      case MSG_LINE_FINISHED:
+      {
+         emit LineFinished();
       } break;
    }
 
