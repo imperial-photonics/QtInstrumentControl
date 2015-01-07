@@ -127,7 +127,20 @@ void ArduinoCounter::SetExternalClockDivisor(int ext_clock_divisor_)
 void ArduinoCounter::SetPixelsPerLine(int pixels_per_line_)
 {
    pixels_per_line = pixels_per_line_;
-   SendMessage(MSG_SET_NUM_PIXEL, pixels_per_line);
+   SendMessage(MSG_SET_NUM_PIXEL, (quint32) pixels_per_line);
+}
+
+void ArduinoCounter::SetGalvoStep(int galvo_step_)
+{
+   galvo_step = galvo_step_;
+   SendMessage(MSG_SET_GALVO_STEP, (quint32) galvo_step);
+}
+
+void ArduinoCounter::SetGalvoOffset(int galvo_offset_)
+{
+   galvo_offset = galvo_offset_;
+   SendMessage(MSG_SET_GALVO_OFFSET, galvo_offset);
+   emit GalvoOffsetChanged(galvo_offset);
 }
 
 void ArduinoCounter::StartLine()

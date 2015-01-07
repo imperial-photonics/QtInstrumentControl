@@ -7,6 +7,7 @@
 #define MSG_IDENTIFY 0x49 // 'I'
 #define MSG_IDENTITY 0x4A
 
+
 // Setup commands
 #define MSG_SET_MODE 0x01
 #define MSG_SET_PIXEL_CLOCK_SOURCE 0x02
@@ -15,6 +16,8 @@
 #define MSG_SET_NUM_PIXEL 0x05
 #define MSG_SET_EXTERNAL_CLOCK_DIVISOR 0x06
 #define MSG_SET_TRIGGER_CLOCK_DIVISOR 0x07
+#define MSG_SET_GALVO_OFFSET 0x08
+#define MSG_SET_GALVO_STEP 0x09
 
 // Triggering commands
 #define MSG_TRIGGER 0x10
@@ -56,6 +59,8 @@ public:
    void SetExternalClockDivisor(int ext_clock_divisor);
    void SetDwellTime(double dwell_time_ms_);
    void SetPixelsPerLine(int pixels_per_line_);
+   void SetGalvoStep(int galvo_step_);
+   void SetGalvoOffset(int galvo_offset_);
 
    bool GetStreaming() { return streaming; }
    bool GetUseExternalClock() { return use_external_clock; }
@@ -63,6 +68,8 @@ public:
    int GetExternalClockDivisor() { return ext_clock_divisor; }
    double GetDwellTime() { return dwell_time_ms; }
    int GetPixelsPerLine() { return pixels_per_line; }
+   int GetGalvoStep() { return galvo_step; }
+   int GetGalvoOffset() { return galvo_offset; }
 
    void StartLine();
    
@@ -72,6 +79,7 @@ signals:
    void LineFinished();
    void PMTEnabled(bool endabled);
    void OverloadOccured();
+   void GalvoOffsetChanged(int galvo_offset);
 
 private:
 
@@ -98,6 +106,9 @@ private:
    int ext_clock_divisor = 1;
    int trigger_divisor = 4;
    int pixels_per_line = 1;
+
+   int galvo_step = 1;
+   int galvo_offset = 0;
 
    //bool connected;
    int idx = 0;
