@@ -45,6 +45,21 @@ public:
    }
 };
 
+template<class V, class U, class T>
+struct BoundControl<QGroupBox, V, U, T>
+{
+public:
+   template<class V, class U, class T>
+   BoundControl(ControlBinder* binder, QString name, QGroupBox* widget, V* obj, void(U::*setter)(T), T(U::*getter)(void), void (U::*signal)(T) = nullptr, Qt::ConnectionType connection_type = Qt::AutoConnection)
+   {
+      auto widget_signal = static_cast<void (QGroupBox::*)(T)>(&QGroupBox::toggled);
+      auto widget_setter = static_cast<void (QGroupBox::*)(T)>(&QGroupBox::setChecked);
+
+      binder->BindWidget(name, widget, widget_setter, widget_signal, static_cast<U*>(obj), setter, getter, signal, connection_type);
+      binder->SetByValue(name, widget, widget_setter, widget_signal, static_cast<U*>(obj), setter, getter, signal);
+   }
+};
+
 template<class V, class U>
 struct BoundControl<QLineEdit, V, U, const QString&>
 {
