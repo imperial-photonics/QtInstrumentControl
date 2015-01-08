@@ -2,54 +2,26 @@
 
 #include <QThread>
 
+ 
 class ThreadedObject : public QObject
 {
    Q_OBJECT
 public:
-   ThreadedObject(QObject* parent = 0)
-   {
-      thread = new QThread(this);
-      ConnectSignals();
+   ThreadedObject(QObject* parent = nullptr, QThread* ex_thread = nullptr);
 
-      if (parent != 0)
-         connect(parent, &QObject::destroyed, this, &QObject::deleteLater);
-   }
+   void StartThread();
 
-   ThreadedObject(QThread* thread)
-      : thread(thread)
-   {
-      ConnectSignals();
-   }
+   QThread* GetThread();
 
-   void StartThread()
-   {
-      this->moveToThread(thread);
-      thread->start();
-   }
+   void ParentDestroyed();
 
-   QThread* GetThread()
-   {
-      return thread;
-   }
+   virtual ~ThreadedObject();
 
-   virtual ~ThreadedObject()
-   {
-      if (thread->isRunning())
-         thread->wait();
-   }
-
-   virtual void Init() {};
+   virtual void Init() = 0;
 
 
 protected:
    QThread* thread;
-
-private:
-   void ConnectSignals()
-   {
-      connect(thread, &QThread::started, this, &ThreadedObject::Init);
-      connect(this, &QObject::destroyed, thread, &QThread::quit);
-      connect(thread, &QThread::finished, thread, &QThread::deleteLater);
-   }
+   bool private_thread;
 };
 

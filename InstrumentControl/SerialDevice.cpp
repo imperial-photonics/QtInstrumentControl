@@ -10,8 +10,8 @@ using namespace std;
 
 QMutex SerialDevice::port_detection_mutex;
 
-SerialDevice::SerialDevice(QObject *parent) :
-ThreadedObject(parent),
+SerialDevice::SerialDevice(QObject *parent, QThread *thread) :
+ThreadedObject(parent, thread),
 connection_mutex(QMutex::Recursive),
 connected(false),
 shutdown(false)

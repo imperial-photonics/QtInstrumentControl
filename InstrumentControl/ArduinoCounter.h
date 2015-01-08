@@ -22,6 +22,7 @@
 // Triggering commands
 #define MSG_TRIGGER 0x10
 #define MSG_START_LINE 0x11
+#define MSG_STOP 0x12
 
 #define MSG_PIXEL_DATA 0x20
 #define MSG_LINE_DATA 0x21
@@ -42,10 +43,10 @@ class ArduinoCounter : public SerialDevice
     Q_OBJECT
 
 public:
-   ArduinoCounter(QObject *parent = 0);
+   ArduinoCounter(QObject *parent = 0, QThread *thread = 0);
    ~ArduinoCounter(); 
 
-   void Init();
+   Q_INVOKABLE void Init();
 
    void GetCount();
 
@@ -72,6 +73,7 @@ public:
    int GetGalvoOffset() { return galvo_offset; }
 
    void StartLine();
+   void Stop();
    
 signals:
    void CountUpdated(int count);

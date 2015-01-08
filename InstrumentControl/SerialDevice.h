@@ -14,10 +14,10 @@ class SerialDevice : public ThreadedObject
    Q_OBJECT
 
 public:
-   SerialDevice(QObject *parent = 0);
+   SerialDevice(QObject *parent = 0, QThread *thread = 0);
    virtual ~SerialDevice();
 
-   virtual void Init(); // called on startup
+   Q_INVOKABLE virtual void Init(); // called on startup
    void Connect();
 
    virtual bool ConnectToDevice(const QString& port) = 0;

@@ -7,8 +7,8 @@
 
 using namespace std;
 
-ArduinoCounter::ArduinoCounter(QObject *parent) :
-   SerialDevice(parent)
+ArduinoCounter::ArduinoCounter(QObject *parent, QThread* thread) :
+   SerialDevice(parent, thread)
    
 {
    port_description = "Arduino Due";
@@ -146,6 +146,11 @@ void ArduinoCounter::SetGalvoOffset(int galvo_offset_)
 void ArduinoCounter::StartLine()
 {
    SendMessage(MSG_START_LINE);
+}
+
+void ArduinoCounter::Stop()
+{
+   SendMessage(MSG_STOP);
 }
 
 void ArduinoCounter::SetPMTEnabled(bool enabled)

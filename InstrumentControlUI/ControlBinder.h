@@ -93,15 +93,16 @@ public:
 
 
 
-class ControlBinder
+class ControlBinder 
 {
+
 public:
 
 #define Bind(widget, ...) BindImpl(#widget, widget, ##__VA_ARGS__)
 #define DirectBind(widget, ...) DirectBindImpl(#widget, widget, ##__VA_ARGS__)
 #define QueuedBind(widget, ...) DirectBindImpl(#widget, widget, ##__VA_ARGS__)
 
-   ControlBinder(QObject* parent, QString object_name) : parent(parent)
+   ControlBinder(QObject* parent, QString object_name)
    {
       settings = new QSettings(parent);
    }
@@ -125,7 +126,6 @@ protected:
    {
       BoundControl<W, V, U, T>* control = new BoundControl<W, V, U, T>(this, name, widget, obj, setter, getter, signal, Qt::QueuedConnection);
    }
-
 
 private:
 
@@ -159,7 +159,7 @@ private:
       T2 v1 = (settings->value(name, default_v)).value<T2>();
 
 
-      std::bind(setter, obj, std::placeholders::_1)(v1);
+      //std::bind(setter, obj, std::placeholders::_1)(v1);
       std::bind(widget_setter, widget, std::placeholders::_1)(v1);
    }
 
