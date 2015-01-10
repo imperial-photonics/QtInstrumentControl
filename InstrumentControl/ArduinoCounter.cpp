@@ -13,15 +13,15 @@ ArduinoCounter::ArduinoCounter(QObject *parent, QThread* thread) :
 {
    port_description = "Arduino Due";
 
-   monitor_timer = new QTimer(this);
-   connect(monitor_timer, &QTimer::timeout, this, &ArduinoCounter::MonitorCount);
-   monitor_timer->start(100);
-
    StartThread();
 }
 
 void ArduinoCounter::Init()
 {
+   monitor_timer = new QTimer(this);
+   connect(monitor_timer, &QTimer::timeout, this, &ArduinoCounter::MonitorCount);
+   monitor_timer->start(100);
+
    SerialDevice::Init();
 }
 
@@ -291,6 +291,7 @@ QByteArray ArduinoCounter::ProcessMessage(QByteArray data)
       case MSG_LINE_DATA:
       {
          int n_px = payload.size() / 2;
+         uint16_t* d = reinterpret_cast<uint16_t*>(payload.data());
          cv::Mat line(1, n_px, CV_16U, payload.data());
 
          emit NewLine(line);

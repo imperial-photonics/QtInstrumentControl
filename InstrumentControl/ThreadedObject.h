@@ -1,6 +1,8 @@
 #pragma once
 
 #include <QThread>
+#include <QMutex>
+#include <QWaitCondition>
 
  
 class ThreadedObject : public QObject
@@ -19,9 +21,17 @@ public:
 
    virtual void Init() = 0;
 
+signals:
+   void Started();
 
 protected:
+
+   Q_INVOKABLE void StartInit();
+
    QThread* thread;
    bool private_thread;
+
+   QMutex init_mutex;
+   QWaitCondition init_cv;
 };
 

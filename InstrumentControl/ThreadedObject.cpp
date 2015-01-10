@@ -3,17 +3,14 @@
 ThreadedObject::ThreadedObject(QObject* parent, QThread* ex_thread)
    : thread(ex_thread)
 {
+
    if (parent != nullptr)
       connect(parent, &QObject::destroyed, this, &ThreadedObject::deleteLater);
 
    private_thread = (thread == nullptr);
    if (thread == nullptr)
-      thread = new QThread();
+      thread = new QThread;
 
-}
-
-void ThreadedObject::StartThread()
-{
    this->moveToThread(thread);
 
    // Start thread if it isn't running
@@ -26,14 +23,26 @@ void ThreadedObject::StartThread()
       connect(this, &QObject::destroyed, thread, &QThread::deleteLater, Qt::DirectConnection);
    }
 
-   // Call Init function
-   QMetaObject::invokeMethod(this, "Init", Qt::QueuedConnection);
-
+   //connect(this, &ThreadedObject::Started, this, &ThreadedObject::StartInit, Qt::QueuedConnection);
+   //emit Started();
 }
 
-QThread* ThreadedObject::GetThread()
+void ThreadedObject::StartInit()
 {
-   return thread;
+   QMutexLocker lk(&init_mutex);
+   this->Init();
+   init_cv.wakeAll();
+}
+
+void ThreadedObject::StartThread()
+{
+   thread->setObjectName(objectName());
+   
+   // Call Init function
+   QMetaObject::invokeMethod(this, "StartInit", Qt::QueuedConnection);
+
+   QMutexLocker lk(&init_mutex);
+   init_cv.wait(&init_mutex);
 }
 
 ThreadedObject::~ThreadedObject()

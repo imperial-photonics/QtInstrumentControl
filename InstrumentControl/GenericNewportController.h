@@ -15,7 +15,7 @@ public:
 
    GenericNewportController(const QString& controller_type, const QString& stage_type = "", QObject* parent = 0);
 
-   Q_INVOKABLE void Init();
+   void Init();
 
    bool ConnectToDevice(const QString& port);
    void ResetDevice(const QString& port) {};

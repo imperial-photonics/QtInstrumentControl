@@ -17,7 +17,7 @@ public:
    SerialDevice(QObject *parent = 0, QThread *thread = 0);
    virtual ~SerialDevice();
 
-   Q_INVOKABLE virtual void Init(); // called on startup
+   virtual void Init(); // called on startup
    void Connect();
 
    virtual bool ConnectToDevice(const QString& port) = 0;

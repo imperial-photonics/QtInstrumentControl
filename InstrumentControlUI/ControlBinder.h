@@ -158,9 +158,12 @@ private:
       
       T2 v1 = (settings->value(name, default_v)).value<T2>();
 
-
       //std::bind(setter, obj, std::placeholders::_1)(v1);
       std::bind(widget_setter, widget, std::placeholders::_1)(v1);
+      
+      // Force widget to emit signal
+      std::bind(widget_signal, widget, std::placeholders::_1)(v1);
+
    }
 
    template<class W, class U, class T>

@@ -24,7 +24,7 @@ public:
 
    const QString& GetUnits() { return units; }
 
-   Q_INVOKABLE void Init();
+   void Init();
 
 protected:
 

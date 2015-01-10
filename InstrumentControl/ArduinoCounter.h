@@ -46,7 +46,7 @@ public:
    ArduinoCounter(QObject *parent = 0, QThread *thread = 0);
    ~ArduinoCounter(); 
 
-   Q_INVOKABLE void Init();
+   void Init();
 
    void GetCount();
 
