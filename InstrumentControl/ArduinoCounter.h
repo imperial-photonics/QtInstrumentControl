@@ -25,7 +25,9 @@
 // Triggering commands
 #define MSG_TRIGGER 0x10
 #define MSG_START_LINE 0x11
-#define MSG_STOP 0x12
+#define MSG_PRIME_LINE 0x12
+#define MSG_STOP 0x13
+
 
 #define MSG_PIXEL_DATA 0x20
 #define MSG_LINE_DATA 0x21
@@ -84,6 +86,7 @@ public:
 
 
    void StartLine();
+   void PrimeLine();
    void Stop();
    
 signals:
@@ -120,7 +123,7 @@ private:
    int ext_clock_divisor = 1;
    int trigger_divisor = 4;
    int pixels_per_line = 1;
-   bool use_diagnostic_counts = true;
+   bool use_diagnostic_counts = false;
 
    int galvo_step = 1;
    int galvo_offset = 0;

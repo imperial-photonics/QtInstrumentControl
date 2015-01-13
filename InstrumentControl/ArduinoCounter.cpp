@@ -173,6 +173,12 @@ void ArduinoCounter::StartLine()
    SendMessage(MSG_START_LINE);
 }
 
+void ArduinoCounter::PrimeLine()
+{
+   SendMessage(MSG_PRIME_LINE);
+}
+
+
 void ArduinoCounter::Stop()
 {
    SendMessage(MSG_STOP);
