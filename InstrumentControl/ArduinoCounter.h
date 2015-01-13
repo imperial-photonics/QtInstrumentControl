@@ -11,13 +11,16 @@
 // Setup commands
 #define MSG_SET_MODE 0x01
 #define MSG_SET_PIXEL_CLOCK_SOURCE 0x02
-#define MSG_SET_LAG_TIME 0x03
-#define MSG_SET_DWELL_TIME 0x04
-#define MSG_SET_NUM_PIXEL 0x05
-#define MSG_SET_EXTERNAL_CLOCK_DIVISOR 0x06
-#define MSG_SET_TRIGGER_CLOCK_DIVISOR 0x07
-#define MSG_SET_GALVO_OFFSET 0x08
-#define MSG_SET_GALVO_STEP 0x09
+#define MSG_SET_LINE_CLOCK_SOURCE 0x03
+#define MSG_SET_LAG_TIME 0x04
+#define MSG_SET_DWELL_TIME 0x05
+#define MSG_SET_NUM_PIXEL 0x06
+#define MSG_SET_EXTERNAL_CLOCK_DIVISOR 0x07
+#define MSG_SET_TRIGGER_CLOCK_DIVISOR 0x08
+#define MSG_SET_GALVO_OFFSET 0x09
+#define MSG_SET_GALVO_STEP 0x0A
+#define MSG_SET_NUM_FLYBACK_STEPS 0x0B
+#define MSG_USE_DIAGNOSTIC_COUNTS 0x0C
 
 // Triggering commands
 #define MSG_TRIGGER 0x10
@@ -27,13 +30,14 @@
 #define MSG_PIXEL_DATA 0x20
 #define MSG_LINE_DATA 0x21
 #define MSG_LINE_FINISHED 0x22
+#define MSG_INFO 0x23
 
 
 #define MODE_STREAMING  0x01
 #define MODE_ON_DEMAND  0x02
 
-#define PIXEL_CLOCK_INTERNAL 0x01
-#define PIXEL_CLOCK_EXTERNAL 0x02
+#define CLOCK_INTERNAL 0x01
+#define CLOCK_EXTERNAL 0x02
 
 
 
@@ -56,21 +60,28 @@ public:
 
    void SetStreaming(bool streaming);
    void SetUseExternalPixelClock(bool use_external);
+   void SetUseExternalLineClock(bool use_external);
    void SetTriggerDivisor(int trigger_divisor);
    void SetExternalClockDivisor(int ext_clock_divisor);
-   void SetDwellTime(double dwell_time_ms_);
-   void SetPixelsPerLine(int pixels_per_line_);
-   void SetGalvoStep(int galvo_step_);
-   void SetGalvoOffset(int galvo_offset_);
+   void SetDwellTime(double dwell_time_ms);
+   void SetPixelsPerLine(int pixels_per_line);
+   void SetGalvoStep(int galvo_step);
+   void SetGalvoOffset(int galvo_offset);
+   void SetNumFlybackSteps(int num_flyback_steps);
+   void SetUseDiagnosticCounts(bool use_diagnostic_counts);
 
    bool GetStreaming() { return streaming; }
-   bool GetUseExternalClock() { return use_external_clock; }
+   bool GetUseExternalClock() { return use_external_pixel_clock; }
+   bool GetUseExternalLineClock() { return use_external_line_clock; }
    int GetTriggerDivisor() { return trigger_divisor; };
    int GetExternalClockDivisor() { return ext_clock_divisor; }
    double GetDwellTime() { return dwell_time_ms; }
    int GetPixelsPerLine() { return pixels_per_line; }
    int GetGalvoStep() { return galvo_step; }
    int GetGalvoOffset() { return galvo_offset; }
+   int GetNumFlybackSteps() { return n_flyback_steps; }
+   bool GetUseDiagnosticCounts() { return use_diagnostic_counts; }
+
 
    void StartLine();
    void Stop();
@@ -104,13 +115,16 @@ private:
 
    bool streaming = false;
    double dwell_time_ms = 100;
-   bool use_external_clock = false;
+   bool use_external_line_clock = false;
+   bool use_external_pixel_clock = false;
    int ext_clock_divisor = 1;
    int trigger_divisor = 4;
    int pixels_per_line = 1;
+   bool use_diagnostic_counts = true;
 
    int galvo_step = 1;
    int galvo_offset = 0;
+   int n_flyback_steps = 0;
 
    //bool connected;
    int idx = 0;
