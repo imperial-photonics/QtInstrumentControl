@@ -38,10 +38,10 @@ void ThreadedObject::StartThread()
 {
    thread->setObjectName(objectName());
    
+   QMutexLocker lk(&init_mutex);
+
    // Call Init function
    QMetaObject::invokeMethod(this, "StartInit", Qt::QueuedConnection);
-
-   QMutexLocker lk(&init_mutex);
    init_cv.wait(&init_mutex);
 }
 
