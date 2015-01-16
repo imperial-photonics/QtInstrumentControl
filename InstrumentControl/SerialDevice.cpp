@@ -58,7 +58,7 @@ void SerialDevice::Connect()
 
    // Couldn't connect, try autoconnection later
    connection_timer->start();
-   NewMessage("Could not connect to device.");
+   //NewMessage("Could not connect to device.");
 }
 
 
