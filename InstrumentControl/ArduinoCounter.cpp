@@ -3,14 +3,34 @@
 #include <QApplication>
 
 #include <QThread>
+#include <algorithm>
 
 using namespace std;
 
-ArduinoCounter::ArduinoCounter(QObject *parent) :
-   SerialDevice(parent)
+ArduinoCounter::ArduinoCounter(QObject *parent, QThread* thread) :
+   SerialDevice(parent, thread)
    
 {
    port_description = "Arduino Due";
+
+   StartThread();
+}
+
+void ArduinoCounter::Init()
+{
+   monitor_timer = new QTimer(this);
+   connect(monitor_timer, &QTimer::timeout, this, &ArduinoCounter::MonitorCount);
+   monitor_timer->start(100);
+
+   connect(this, &ArduinoCounter::NewMessage, [](const QString& msg) { cout << msg.toStdString() << "\n"; });
+
+   SerialDevice::Init();
+}
+
+void ArduinoCounter::MonitorCount()
+{
+   if (!streaming)
+      GetCount();
 }
 
 void ArduinoCounter::ResetDevice(const QString& port_name)
@@ -48,31 +68,120 @@ bool ArduinoCounter::ConnectToDevice(const QString& port)
       return false;
 
    // Check that arduino identifies correctly
-   QString response = ResponseFromCommand("I");
+   /*
+   SendMessage(MSG_IDENTIFY, uint32_t(0), false);
+   QByteArray response = WaitForMessage(MSG_IDENTITY);
    if (response != "Photon Counter")
    {
       serial_port->close();
       return false;
    }
+   */
 
    connect(serial_port, &QSerialPort::readyRead, this, &ArduinoCounter::ReadData);
-   connected = true;
 
+   SetConnected();
    SetDwellTime(dwell_time_ms);
+   SetUseExternalPixelClock(use_external_pixel_clock);
+   SetUseExternalLineClock(use_external_line_clock);
+   SetTriggerDivisor(trigger_divisor);
+   SetExternalClockDivisor(ext_clock_divisor);
+   SetNumFlybackSteps(n_flyback_steps);
+   SetUseDiagnosticCounts(use_diagnostic_counts);
+
 
    emit NewMessage("Connected to Arduino.");
    return true;
 
 }
 
+void ArduinoCounter::SetStreaming(bool streaming_)
+{
+   streaming = streaming_;
+   uint32_t mode = streaming ? MODE_STREAMING : MODE_ON_DEMAND;
+   SendMessage(MSG_SET_MODE, mode);
+}
+
 void ArduinoCounter::SetDwellTime(double dwell_time_ms_)
 {
-   // Enforce minimum dwell time
-   if (dwell_time_ms_ < 1)
-      return;
-
    dwell_time_ms = dwell_time_ms_;
-   SendCommand("P", dwell_time_ms * 1000);
+
+   float dwell_time_us = dwell_time_ms * 1000.0;
+   SendMessage(MSG_SET_DWELL_TIME, dwell_time_us);
+}
+
+void ArduinoCounter::SetUseExternalPixelClock(bool use_external_clock_)
+{
+   use_external_pixel_clock = use_external_clock_;
+   uint32_t source = use_external_pixel_clock ? CLOCK_EXTERNAL : CLOCK_INTERNAL;
+   SendMessage(MSG_SET_PIXEL_CLOCK_SOURCE, source);
+}
+
+void ArduinoCounter::SetUseExternalLineClock(bool use_external_clock_)
+{
+   use_external_line_clock = use_external_clock_;
+   uint32_t source = use_external_line_clock ? CLOCK_EXTERNAL : CLOCK_INTERNAL;
+   SendMessage(MSG_SET_LINE_CLOCK_SOURCE, source);
+}
+
+void ArduinoCounter::SetTriggerDivisor(int trigger_divisor_)
+{
+   trigger_divisor = trigger_divisor_;
+   SendMessage(MSG_SET_TRIGGER_CLOCK_DIVISOR, trigger_divisor);
+}
+
+void ArduinoCounter::SetExternalClockDivisor(int ext_clock_divisor_)
+{
+   ext_clock_divisor = ext_clock_divisor_;
+   SendMessage(MSG_SET_EXTERNAL_CLOCK_DIVISOR, ext_clock_divisor);
+
+}
+
+void ArduinoCounter::SetPixelsPerLine(int pixels_per_line_)
+{
+   pixels_per_line = pixels_per_line_;
+   SendMessage(MSG_SET_NUM_PIXEL, (quint32) pixels_per_line);
+}
+
+void ArduinoCounter::SetGalvoStep(int galvo_step_)
+{
+   galvo_step = galvo_step_;
+   SendMessage(MSG_SET_GALVO_STEP, (quint32) galvo_step);
+}
+
+void ArduinoCounter::SetGalvoOffset(int galvo_offset_)
+{
+   galvo_offset = galvo_offset_;
+   SendMessage(MSG_SET_GALVO_OFFSET, galvo_offset);
+   emit GalvoOffsetChanged(galvo_offset);
+}
+
+void ArduinoCounter::SetNumFlybackSteps(int n_flyback_steps_)
+{
+   n_flyback_steps = n_flyback_steps_;
+   SendMessage(MSG_SET_NUM_FLYBACK_STEPS, n_flyback_steps);
+}
+
+void ArduinoCounter::SetUseDiagnosticCounts(bool use_diagnostic_counts_)
+{
+   use_diagnostic_counts = use_diagnostic_counts_;
+   SendMessage(MSG_USE_DIAGNOSTIC_COUNTS, (int)use_diagnostic_counts);
+}
+
+void ArduinoCounter::StartLine()
+{
+   SendMessage(MSG_START_LINE);
+}
+
+void ArduinoCounter::PrimeLine()
+{
+   SendMessage(MSG_PRIME_LINE);
+}
+
+
+void ArduinoCounter::Stop()
+{
+   SendMessage(MSG_STOP);
 }
 
 void ArduinoCounter::SetPMTEnabled(bool enabled)
@@ -83,10 +192,7 @@ void ArduinoCounter::SetPMTEnabled(bool enabled)
       return;
    }
 
-   if (enabled)
-      SendCommand("E1");
-   else
-      SendCommand("E0");
+   // TODO ... set PMT state
 
    // need some kind of feedback here really
    emit PMTEnabled(enabled);
@@ -112,12 +218,56 @@ void ArduinoCounter::SendCommand(char command[], float value)
 
 void ArduinoCounter::GetCount()
 {
-   if (!connected)
-      return;
+   SendMessage(MSG_TRIGGER);
+}
+
+
+QByteArray ArduinoCounter::ReadBytes(int n_bytes, int timeout_ms)
+{
+   char a[10][4];
+
+   char* b = a[4];
+
+
+   int attempts = timeout_ms / 100;
+   QByteArray data;
 
    QMutexLocker lk(&connection_mutex);
 
-   serial_port->write("X");
+   while (data.size() < n_bytes && attempts > 0)
+   {
+      serial_port->waitForReadyRead(100);
+      QByteArray d = serial_port->read(n_bytes - data.size());
+      data.append(d);
+
+      if (d.isEmpty())
+         attempts--;
+   }
+
+   return data;
+}
+
+
+QByteArray ArduinoCounter::WaitForMessage(char msg, int timeout_ms)
+{
+   int packet_size = 5;
+   QByteArray data;
+   
+   do
+   {
+      data = ReadBytes(5);
+
+      if (data.size() == packet_size)
+      {
+         QByteArray payload = ProcessMessage(data);
+         //if (bytes_left_in_message > 0);
+         //data.append( ReadBytes() )
+         if ((data[0] & 0x7F) == msg)
+            return payload;
+      }
+   } while (data.size() > 0);
+
+   return QByteArray();
 }
 
 
@@ -125,35 +275,75 @@ void ArduinoCounter::ReadData()
 {
    QMutexLocker lk(&connection_mutex);
 
-   QByteArray data = serial_port->readAll();
-   
-   const uint32_t* values = (const uint32_t*) (data.constData());
-   int n_values = data.size() / 4;
 
-   int byte = 0;
-   for (int i = 0; i < n_values; i++)
+   while (serial_port->bytesAvailable() > bytes_left_in_message)
    {
-      if (values[i] & 0x8000000000000000) // overload signal
+      QByteArray d = serial_port->read(bytes_left_in_message);
+      bytes_left_in_message -= d.size();
+      current_message.append(d);
+
+      if (bytes_left_in_message == 0)
+         ProcessMessage(current_message);
+
+      if (bytes_left_in_message == 0)
+         bytes_left_in_message = 5;
+   }
+}
+
+QByteArray ArduinoCounter::ProcessMessage(QByteArray data)
+{
+   unsigned char msg = data[0] & 0x7F;
+   char* a = data.data();
+   uint32_t param = *reinterpret_cast<uint32_t*>(data.data() + 1);
+
+   QByteArray payload;
+   if (data[0] & 0x80) // message has payload
+   {
+      int total_bytes_expected = param + 5;
+      if (data.size() < total_bytes_expected)
       {
-         emit OverloadOccured();
-         //values[i] = 0;
+         bytes_left_in_message = total_bytes_expected - data.size();
+         return payload;
+      }
+      payload = data.mid(5);
+
+      char b = data[0] & 0x7F;
+
+   }
+
+
+
+   switch (msg)
+   {
+      case MSG_PIXEL_DATA:
+      {
+         emit CountUpdated(param);
+      } break;
+      case MSG_LINE_DATA:
+      {
+         int n_px = payload.size() / 2;
+         uint16_t* d = reinterpret_cast<uint16_t*>(payload.data());
+         cv::Mat line(1, n_px, CV_16U, payload.data());
+
+         emit NewLine(line);
+      } break;
+      case MSG_LINE_FINISHED:
+      {
+         emit LineFinished();
+      } break;
+      case MSG_INFO:
+      {
+         emit NewMessage(QString("Arduino Message: %1\n").arg(param));
       }
    }
 
-   uint16_t v = values[n_values - 1] & ((1<<16)-1);
+   current_message.clear();
 
-   emit CountUpdated(v);
-
-   QString m("New Message: ");
-   m.append(data);
-
-   //emit NewMessage(m);
+   return payload;
 }
+
 
 ArduinoCounter::~ArduinoCounter()
 {
-   if (!connected)
-      return;
-
    serial_port->close();
 }

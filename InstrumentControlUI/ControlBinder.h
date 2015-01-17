@@ -45,6 +45,21 @@ public:
    }
 };
 
+template<class V, class U, class T>
+struct BoundControl<QGroupBox, V, U, T>
+{
+public:
+   template<class V, class U, class T>
+   BoundControl(ControlBinder* binder, QString name, QGroupBox* widget, V* obj, void(U::*setter)(T), T(U::*getter)(void), void (U::*signal)(T) = nullptr, Qt::ConnectionType connection_type = Qt::AutoConnection)
+   {
+      auto widget_signal = static_cast<void (QGroupBox::*)(T)>(&QGroupBox::toggled);
+      auto widget_setter = static_cast<void (QGroupBox::*)(T)>(&QGroupBox::setChecked);
+
+      binder->BindWidget(name, widget, widget_setter, widget_signal, static_cast<U*>(obj), setter, getter, signal, connection_type);
+      binder->SetByValue(name, widget, widget_setter, widget_signal, static_cast<U*>(obj), setter, getter, signal);
+   }
+};
+
 template<class V, class U>
 struct BoundControl<QLineEdit, V, U, const QString&>
 {
@@ -78,15 +93,16 @@ public:
 
 
 
-class ControlBinder
+class ControlBinder 
 {
+
 public:
 
 #define Bind(widget, ...) BindImpl(#widget, widget, ##__VA_ARGS__)
 #define DirectBind(widget, ...) DirectBindImpl(#widget, widget, ##__VA_ARGS__)
 #define QueuedBind(widget, ...) DirectBindImpl(#widget, widget, ##__VA_ARGS__)
 
-   ControlBinder(QObject* parent, QString object_name) : parent(parent)
+   ControlBinder(QObject* parent, QString object_name)
    {
       settings = new QSettings(parent);
    }
@@ -110,7 +126,6 @@ protected:
    {
       BoundControl<W, V, U, T>* control = new BoundControl<W, V, U, T>(this, name, widget, obj, setter, getter, signal, Qt::QueuedConnection);
    }
-
 
 private:
 
@@ -143,9 +158,12 @@ private:
       
       T2 v1 = (settings->value(name, default_v)).value<T2>();
 
-
-      std::bind(setter, obj, std::placeholders::_1)(v1);
+      //std::bind(setter, obj, std::placeholders::_1)(v1);
       std::bind(widget_setter, widget, std::placeholders::_1)(v1);
+      
+      // Force widget to emit signal
+      std::bind(widget_signal, widget, std::placeholders::_1)(v1);
+
    }
 
    template<class W, class U, class T>

@@ -21,6 +21,7 @@ set(SOURCE
    GenericNewportController.cpp
    ThorlabsAPTController.cpp
    ImageSource.cpp
+   ThreadedObject.cpp
 )
 
 

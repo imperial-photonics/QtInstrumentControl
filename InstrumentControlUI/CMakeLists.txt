@@ -28,9 +28,9 @@ set(HEADERS
 
 # manually add include directories since we're not linking libraries in
 # this module
-INCLUDE_DIRECTORIES(${Qt5Widgets_INCLUDE_DIRS} ${Qt5SerialPort_INCLUDE_DIRS} ${InstrumentControl_INCLUDE_DIR})
+INCLUDE_DIRECTORIES(${Qt5Widgets_INCLUDE_DIRS} ${Qt5SerialPort_INCLUDE_DIRS} ${InstrumentControl_INCLUDE_DIR} ${CMAKE_CURRENT_BINARY_DIR})
 
-set(InstrumentControlUI_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR} ${InstrumentControl_INCLUDE_DIR} PARENT_SCOPE)
+set(InstrumentControlUI_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR} ${InstrumentControl_INCLUDE_DIR} ${CMAKE_CURRENT_BINARY_DIR} PARENT_SCOPE)
 
 add_library(InstrumentControlUI OBJECT ${SOURCE} ${HEADERS} ${UI_HEADERS})
 

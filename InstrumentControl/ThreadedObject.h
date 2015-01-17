@@ -1,28 +1,37 @@
 #pragma once
 
 #include <QThread>
+#include <QMutex>
+#include <QWaitCondition>
 
+ 
 class ThreadedObject : public QObject
 {
    Q_OBJECT
 public:
-   ThreadedObject(QObject* parent = 0)
-   {
-      thread = new QThread(this);
+   ThreadedObject(QObject* parent = nullptr, QThread* ex_thread = nullptr);
 
-      if (parent != 0)
-         connect(parent, &QObject::destroyed, this, &QObject::deleteLater);
+   void StartThread();
 
-      connect(thread, &QThread::started, this, &ThreadedObject::Init);
-      connect(this, &QObject::destroyed, thread, &QThread::quit);
-      connect(thread, &QThread::finished, thread, &QThread::deleteLater);
-      
-      this->moveToThread(thread);
-      thread->start();
-   }
+   QThread* GetThread();
 
-   virtual void Init() {};
+   void ParentDestroyed();
+
+   virtual ~ThreadedObject();
+
+   virtual void Init() = 0;
+
+signals:
+   void Started();
 
 protected:
+
+   Q_INVOKABLE void StartInit();
+
    QThread* thread;
+   bool private_thread;
+
+   QMutex init_mutex;
+   QWaitCondition init_cv;
 };
+

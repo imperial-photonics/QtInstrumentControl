@@ -17,11 +17,11 @@ find_package(Qt5Designer REQUIRED)
 
 set(CMAKE_AUTOMOC ON)
 
-include_directories(${InstrumentControl_INCLUDE_DIR} ${COMMON_INCLUDE_DIR} ${CMAKE_CURRENT_BINARY_DIR} ${QT_CUSTOM_WIDGETS_INCLUDE_DIR})
+include_directories(${InstrumentControl_INCLUDE_DIR} ${InstrumentControlUI_INCLUDE_DIR} ${COMMON_INCLUDE_DIR} ${CMAKE_CURRENT_BINARY_DIR} ${QT_CUSTOM_WIDGETS_INCLUDE_DIR})
 
 qt5_wrap_ui(UI_HEADERS ArduinoCounterTest.ui)
 
-add_executable(InstrumentControlTest ArduinoCounterTest.h ArduinoCounterTest.cpp ${UI_HEADERS} $<TARGET_OBJECTS:InstrumentControl>)
+add_executable(InstrumentControlTest ArduinoCounterTest.h ArduinoCounterTest.cpp ${UI_HEADERS} $<TARGET_OBJECTS:InstrumentControl> $<TARGET_OBJECTS:InstrumentControlUI>)
 
 qt5_use_modules(InstrumentControlTest Widgets PrintSupport OpenGL Gui SerialPort)
 

@@ -25,21 +25,28 @@ public:
       timer = new QTimer(this);
       
 
-      apt = new ThorlabsAPTController("TDC001", "PRM1-Z8", this);
+      //apt = new ThorlabsAPTController("TDC001", "PRM1-Z8", this);
 
-      //counter = new ArduinoCounter(this);
+      counter = new ArduinoCounter(this);
       //stage = new NewportNSC200("NSR1", this);
       //stage = new NewportSMC100("", this);
 
+      connect(counter, &ArduinoCounter::NewMessage, this, &ArduinoCounterTest::DisplayMessage);
       //connect(stage, &SerialDevice::NewMessage, this, &ArduinoCounterTest::DisplayMessage);
       //connect(counter, &SerialDevice::NewMessage, this, &ArduinoCounterTest::DisplayMessage);
 
       //stage_widget->BindStage(stage);
 
+      connect(counter, &ArduinoCounter::CountUpdated, this, &ArduinoCounterTest::DisplayCount);
+      connect(counter, &ArduinoCounter::Connected, [this](){
+         counter->SetDwellTime(10);
+      });
+
+
       timer->setInterval(500);
       timer->start();
       
-//      connect(timer, &QTimer::timeout, counter, &ArduinoCounter::GetCount);
+      connect(timer, &QTimer::timeout, counter, &ArduinoCounter::GetCount);
 
    }
 

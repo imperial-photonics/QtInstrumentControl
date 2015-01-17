@@ -10,11 +10,17 @@ using namespace std;
 
 QMutex SerialDevice::port_detection_mutex;
 
-SerialDevice::SerialDevice(QObject *parent) :
-ThreadedObject(parent),
+SerialDevice::SerialDevice(QObject *parent, QThread *thread) :
+ThreadedObject(parent, thread),
 connection_mutex(QMutex::Recursive),
-connected(false)
+connected(false),
+shutdown(false)
 {
+}
+
+SerialDevice::~SerialDevice()
+{
+   shutdown = true;
 }
 
 void SerialDevice::Init()
@@ -40,10 +46,10 @@ void SerialDevice::Connect()
       std::string description = port.description().toStdString();
       std::string manufacturer = port.manufacturer().toStdString();
 
-      if (port_description.isEmpty() || port.description() == port_description)
+      if (!port.isBusy() && (port_description.isEmpty() || port.description() == port_description))
       {
          // Try to connect, return if we succesfully connected
-         if (!port.isBusy() && ConnectToDevice(port.portName()))
+         if (ConnectToDevice(port.portName()))
             return;
          //else
          //resetArduino(port.portName());
@@ -52,7 +58,7 @@ void SerialDevice::Connect()
 
    // Couldn't connect, try autoconnection later
    connection_timer->start();
-   NewMessage("Could not connect to device.");
+   //NewMessage("Could not connect to device.");
 }
 
 
@@ -70,7 +76,7 @@ bool SerialDevice::OpenSerialPort(const QString& port, QSerialPort::FlowControl 
    serial_port->setFlowControl(flow_control);
    serial_port->setBaudRate(baud_rate);
 
-   serial_port->setReadBufferSize(1000000);
+   serial_port->setReadBufferSize(0);
 
    if (serial_port->open(QIODevice::ReadWrite) == false)
       return false;
@@ -100,7 +106,7 @@ void SerialDevice::WriteWithTerminator(const QByteArray& command)
 
    while (serial_port->waitForBytesWritten(100)) {};
 
-   std::cout << "Command: " << command.constData() << "\n";
+   //std::cout << "Command: " << command.constData() << "\n";
 }
 
 QByteArray SerialDevice::ReadUntilTerminator(int timeout_ms)
@@ -140,7 +146,7 @@ QByteArray SerialDevice::ReadUntilTerminator(int timeout_ms)
       }
    } while (something_read);
 
-   std::cout << "Response: " << data.constData() << "\n";
+   //std::cout << "Response: " << data.constData() << "\n";
 
    return data;
 }
@@ -150,18 +156,20 @@ void SerialDevice::ErrorOccurred(QSerialPort::SerialPortError error)
    QMutexLocker lk(&connection_mutex);
 
    // Display error message
-   cout << serial_port->errorString().toStdString() << "\n";
-   emit NewMessage(serial_port->errorString());
+   //cout << serial_port->errorString().toStdString() << "\n";
+   //emit NewMessage(serial_port->errorString());
 
    int err = serial_port->error();
 
    // If we couldn't write close and try to connect again
    // Probably means the Arduino was disconnected
-   if (err == QSerialPort::WriteError || err == QSerialPort::DeviceNotFoundError)
-   {
-      serial_port->close();
-      //connection_timer->start();
-   }
+   if (!shutdown)
+      if (err == QSerialPort::WriteError || err == QSerialPort::DeviceNotFoundError)
+      {
+         serial_port->close();
+         connected = false;
+         connection_timer->start();
+      }
 
 }
 
