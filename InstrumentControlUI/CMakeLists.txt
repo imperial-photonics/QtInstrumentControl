@@ -9,7 +9,8 @@ find_package(OpenCV REQUIRED)
 
 find_package(Qt5Widgets REQUIRED)
 
-qt5_wrap_ui(UI_HEADERS ImageRenderWindow.ui)
+qt5_wrap_ui(UI_HEADERS ImageRenderWindow.ui
+                       ImageSeriesControl.ui)
 
 #qt5_add_resources(UI_RESOURCES PuppetMasterResources.qrc)
 
@@ -24,6 +25,7 @@ set(HEADERS
    ControlBinder.h
    ImageRenderWidget.h
    ImageRenderWindow.h
+   ImageSeriesControl.h
 )
 
 # manually add include directories since we're not linking libraries in
