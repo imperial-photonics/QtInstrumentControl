@@ -125,13 +125,12 @@ protected:
    QWaitCondition next_cv;
    QMutex* next_mutex;
 
-   //cv::Size image_size;
-   //int bytes_per_pixel;
-   //int stride;
-
    bool controls_locked = false;
 
 private:
+
+   void AllocateMemory(void** ptr, int size);
+   void FreeMemory(void* ptr);
 
    void QueuePointer(unsigned char* ptr);
 

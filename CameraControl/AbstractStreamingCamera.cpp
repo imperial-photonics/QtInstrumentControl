@@ -3,8 +3,10 @@
 #include <QOpenGLBuffer>
 #include <QTimer>
 
+#ifdef USE_CUDA
 #include <cuda.h>
 #include <cuda_runtime.h>
+#endif
 
 using std::vector;
 using std::shared_ptr;
@@ -36,7 +38,7 @@ void AbstractStreamingCamera::FreeBuffers()
    allocation_idx++;
    latest_data = shared_ptr<ImageBuffer>(new ImageBuffer());
    for( auto buffer : buffers)
-      cudaFreeHost(buffer);
+      FreeMemory(buffer);
    buffers.clear();
 };
 
@@ -84,6 +86,24 @@ void AbstractStreamingCamera::QueuePointer(unsigned char* ptr)
 }
 
 
+void AbstractStreamingCamera::AllocateMemory(void** ptr, int size)
+{
+#ifdef USE_CUDA
+   CHECK(cudaMallocHost(ptr, size, cudaHostAllocMapped)); 
+#else
+   *ptr = malloc(size);
+#endif
+}
+
+void AbstractStreamingCamera::FreeMemory(void* ptr)
+{
+#ifdef USE_CUDA
+   CHECK(cudaFreeHost(ptr));
+#else
+   free(ptr);
+#endif
+}
+
 void AbstractStreamingCamera::AllocateBuffers(int buffer_size_) 
 {
    buffer_size = buffer_size_;
@@ -100,13 +120,13 @@ void AbstractStreamingCamera::AllocateBuffers(int buffer_size_)
       FreeBuffers();
 
       // buffer_size should be big enough for float
-      CHECK(cudaMallocHost(&background_ptr, buffer_size, cudaHostAllocMapped)); 
-
+      AllocateMemory(reinterpret_cast<void**>(&background_ptr), buffer_size);
+      
       for(int i=0; i<n_buffers; i++)
       {
          void* ptr;
-         CHECK(cudaMallocHost(&ptr, buffer_size, cudaHostAllocMapped));
-      
+         AllocateMemory(&ptr, buffer_size);
+
          unsigned char* u8_ptr = static_cast<unsigned char*>(ptr);
          buffers.push_back(u8_ptr);
          unused_buffers.push_back(u8_ptr);

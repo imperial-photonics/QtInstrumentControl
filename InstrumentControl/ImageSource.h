@@ -9,5 +9,5 @@ class ImageSource
 {
 public:
    virtual cv::Mat GetImage() = 0;
-   virtual cv::Mat GetNextImage() = 0;
+   virtual cv::Mat GetNextImage() { return GetImage(); };
 };

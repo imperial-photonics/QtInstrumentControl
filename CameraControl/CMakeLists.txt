@@ -9,7 +9,7 @@ cmake_policy(SET CMP0020 NEW)
 cmake_policy(SET CMP0043 NEW)
 
 find_package(OpenGL REQUIRED)
-find_package(CUDA 5.5 REQUIRED)
+find_package(CUDA 5.5 QUIET)
 
 find_package(Qt5Widgets REQUIRED)
 find_package(Qt5Declarative REQUIRED)
@@ -20,9 +20,12 @@ find_package(OpenCV REQUIRED)
 
 set(CMAKE_AUTOMOC ON)
 
+
+
 # Source Files
 #====================================
 if (INCLUDE_CAMERA_ANDOR)
+   message("hello")
    set(ANDOR_SOURCE
       AndorCamera.cpp
       AndorCamera.h
@@ -44,7 +47,6 @@ if (INCLUDE_CAMERA_XIMEA)
 endif (INCLUDE_CAMERA_XIMEA)
 
 set(SOURCE
-   AndorCamera.cpp
    ImageBuffer.cpp
    AbstractStreamingCamera.cpp
    CameraControlWidget.cpp
@@ -58,7 +60,12 @@ set(HEADERS
    ImageWriter.h
 )
 
-include_directories(${Ximea_DIR} ${ANDOR_DIR} ${QT_USE_FILE} ${COMMON_INCLUDE_DIR} ${InstrumentControl_INCLUDE_DIR} ${CUDA_INCLUDE_DIRS})
+include_directories(${Ximea_DIR} ${ANDOR_DIR} ${QT_USE_FILE} ${COMMON_INCLUDE_DIR} ${InstrumentControl_INCLUDE_DIR})
+
+if (CUDA_FOUND)
+	include_directories(${CUDA_INCLUDE_DIRS})
+   add_definitions(-DUSE_CUDA)
+endif (CUDA_FOUND)
 
 # Linking
 #====================================
