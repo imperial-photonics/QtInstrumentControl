@@ -38,9 +38,9 @@ if (INCLUDE_CAMERA_ANDOR)
 endif (INCLUDE_CAMERA_ANDOR)
 if (INCLUDE_CAMERA_XIMEA)
    set(Ximea_SOURCE
-      XimeaCameraPrivate.h
+      XimeaCamera.h
       XimeaControlDisplay.h
-      XimeaCameraPrivate.cpp
+      XimeaCamera.cpp
       XimeaControlDisplay.cpp
    )
    set(Ximea_LIBRARIES ${Ximea_DIR}/x64/m3apiX64.lib)
@@ -65,6 +65,7 @@ include_directories(${Ximea_DIR} ${ANDOR_DIR} ${QT_USE_FILE} ${COMMON_INCLUDE_DI
 if (CUDA_FOUND)
 	include_directories(${CUDA_INCLUDE_DIRS})
    add_definitions(-DUSE_CUDA)
+   set(CameraControl_CUDA_LIBRARIES ${CUDA_LIBRARIES} ${CUDA_CUDA_LIBRARIES})
 endif (CUDA_FOUND)
 
 # Linking
@@ -82,7 +83,6 @@ set(CameraControl_INCLUDE_DIR ${Ximea_DIR}
 
 set(CameraControl_LIBRARIES ${Ximea_LIBRARIES}
                             ${ANDOR_LIBRARIES}
-                            ${CUDA_LIBRARIES} 
-                            ${CUDA_CUDA_LIBRARIES} 
+                            ${CameraControl_CUDA_LIBRARIES} 
                             ${OpenCV_LIBS} 
                             PARENT_SCOPE)

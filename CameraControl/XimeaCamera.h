@@ -9,14 +9,14 @@ See
 http://www.ximea.com/support/wiki/apis/XiApi_Manual
 */
 
-class XimeaCameraPrivate : public AbstractStreamingCamera
+class XimeaCamera : public AbstractStreamingCamera
 {
 public:
 
    static QStringList GetConnectedCameras();
 
-   XimeaCameraPrivate(int camera_idx, QObject* parent = 0);
-   ~XimeaCameraPrivate();
+   XimeaCamera(int camera_idx, QObject* parent = 0);
+   ~XimeaCamera();
 
    int GetNumBytesPerPixel();
    cv::Size GetImageSize();

@@ -1,5 +1,5 @@
 #include "XimeaControlDisplay.h"
-#include "XimeaCameraPrivate.h"
+#include "XimeaCamera.h"
 #include <xiApi.h>
 
 #include <QApplication>
@@ -10,11 +10,11 @@
 #include <iostream>
 
 
-XimeaCameraPrivate* GetXimeaFromUser(bool choose_camera, QObject* parent)
+XimeaCamera* GetXimeaFromUser(bool choose_camera, QObject* parent)
 {
    QErrorMessage msg;
 
-   QStringList camera_list = XimeaCameraPrivate::GetConnectedCameras();
+   QStringList camera_list = XimeaCamera::GetConnectedCameras();
 
    // Check if any cameras are connected
    //=========================================
@@ -45,7 +45,7 @@ XimeaCameraPrivate* GetXimeaFromUser(bool choose_camera, QObject* parent)
 
 //   try
 //   {
-      return new XimeaCameraPrivate(selected_idx, parent);
+      return new XimeaCamera(selected_idx, parent);
 //   }
 //   catch (...)
 //   {
@@ -55,7 +55,7 @@ XimeaCameraPrivate* GetXimeaFromUser(bool choose_camera, QObject* parent)
 }
 
 
-XimeaControlDisplay::XimeaControlDisplay(XimeaCameraPrivate* camera, QWidget* parent) :
+XimeaControlDisplay::XimeaControlDisplay(XimeaCamera* camera, QWidget* parent) :
 camera(camera), QWidget(parent)
 {
 

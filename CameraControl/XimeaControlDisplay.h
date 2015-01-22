@@ -1,9 +1,9 @@
 #pragma once
 
-#include "XimeaCameraPrivate.h"
+#include "XimeaCamera.h"
 #include "CameraControlWidget.h"
 
-XimeaCameraPrivate* GetXimeaFromUser(bool choose_camera = true, QObject* parent = 0);
+XimeaCamera* GetXimeaFromUser(bool choose_camera = true, QObject* parent = 0);
 
 
 class XimeaControlDisplay : public QWidget
@@ -11,7 +11,7 @@ class XimeaControlDisplay : public QWidget
    Q_OBJECT
 
 public:
-   explicit XimeaControlDisplay(XimeaCameraPrivate* camera, QWidget* parent = 0);
+   explicit XimeaControlDisplay(XimeaCamera* camera, QWidget* parent = 0);
 
 private:
 
@@ -39,7 +39,7 @@ private:
 
    void UpdateStreamingStatus(bool is_streaming);
 
-   XimeaCameraPrivate* camera;
+   XimeaCamera* camera;
    QList<CameraControlWidget*> widgets;
 
 };

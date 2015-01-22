@@ -1,4 +1,4 @@
-#include "XimeaCameraPrivate.h"
+#include "XimeaCamera.h"
 #include "XimeaControlDisplay.h"
 #include <xiApi.h>
 
@@ -8,7 +8,7 @@ void Check(int v)
       throw std::exception("Ximea Camera Error",v);
    }
 
-QStringList XimeaCameraPrivate::GetConnectedCameras()
+QStringList XimeaCamera::GetConnectedCameras()
 {
    QStringList list;
    char buf[1024];
@@ -33,7 +33,7 @@ QStringList XimeaCameraPrivate::GetConnectedCameras()
 }
 
 
-XimeaCameraPrivate::XimeaCameraPrivate(int camera_idx, QObject* parent) :
+XimeaCamera::XimeaCamera(int camera_idx, QObject* parent) :
    AbstractStreamingCamera(parent)
 {
 
@@ -65,12 +65,12 @@ XimeaCameraPrivate::XimeaCameraPrivate(int camera_idx, QObject* parent) :
 }
 
 
-QWidget* XimeaCameraPrivate::GetControlWidget(QWidget* parent)
+QWidget* XimeaCamera::GetControlWidget(QWidget* parent)
 {
    return new XimeaControlDisplay(this, parent);
 }
 
-void XimeaCameraPrivate::SetParameter(const QString& parameter, ParameterType type, QVariant value)
+void XimeaCamera::SetParameter(const QString& parameter, ParameterType type, QVariant value)
 {
    QByteArray b = parameter.toUtf8();
    const char* param = b.constData();
@@ -95,7 +95,7 @@ void XimeaCameraPrivate::SetParameter(const QString& parameter, ParameterType ty
    }
 }
 
-QVariant XimeaCameraPrivate::GetParameter(const QString& parameter, ParameterType type)
+QVariant XimeaCamera::GetParameter(const QString& parameter, ParameterType type)
 {
    QByteArray b = parameter.toUtf8();
    const char* param = b.constData();
@@ -129,7 +129,7 @@ QVariant XimeaCameraPrivate::GetParameter(const QString& parameter, ParameterTyp
    return value;
 }
 
-QVariant XimeaCameraPrivate::GetParameterLimit(const QString& parameter, ParameterType type, Limit limit)
+QVariant XimeaCamera::GetParameterLimit(const QString& parameter, ParameterType type, Limit limit)
 {
    QString p = parameter;
    
@@ -141,7 +141,7 @@ QVariant XimeaCameraPrivate::GetParameterLimit(const QString& parameter, Paramet
    return GetParameter(p, type);
 }
 
-QVariant XimeaCameraPrivate::GetParameterMinIncrement(const QString& parameter, ParameterType type)
+QVariant XimeaCamera::GetParameterMinIncrement(const QString& parameter, ParameterType type)
 {
    QString p = parameter;
 
@@ -149,7 +149,7 @@ QVariant XimeaCameraPrivate::GetParameterMinIncrement(const QString& parameter, 
    return GetParameter(p, type);
 }
 
-EnumerationList XimeaCameraPrivate::GetEnumerationList(const QString& parameter)
+EnumerationList XimeaCamera::GetEnumerationList(const QString& parameter)
 {
    EnumerationList list;
 
@@ -210,7 +210,7 @@ EnumerationList XimeaCameraPrivate::GetEnumerationList(const QString& parameter)
 }
 
 
-int XimeaCameraPrivate::GetNumBytesPerPixel()
+int XimeaCamera::GetNumBytesPerPixel()
 {
    int bit_depth;
    Check(xiGetParamInt(xiH, XI_PRM_OUTPUT_DATA_BIT_DEPTH, &bit_depth));
@@ -219,7 +219,7 @@ int XimeaCameraPrivate::GetNumBytesPerPixel()
    return bit_depth / 8;
 }
 
-cv::Size XimeaCameraPrivate::GetImageSize()
+cv::Size XimeaCamera::GetImageSize()
 {
    int image_width, image_height;
    Check(xiGetParamInt(xiH, XI_PRM_WIDTH, &image_width));
@@ -230,12 +230,12 @@ cv::Size XimeaCameraPrivate::GetImageSize()
 }
 
 
-int XimeaCameraPrivate::GetImageSizeBytes()
+int XimeaCamera::GetImageSizeBytes()
 {
    return GetImageSize().area() * GetNumBytesPerPixel();
 }
 
-int XimeaCameraPrivate::GetStride()
+int XimeaCamera::GetStride()
 {
    // Image stride is always width
 
@@ -244,13 +244,13 @@ int XimeaCameraPrivate::GetStride()
    return image_width;
 }
 
-double XimeaCameraPrivate::GetPixelSize()
+double XimeaCamera::GetPixelSize()
 {
    // Can't get this programmatically
    return 0;
 }
 
-cv::Rect XimeaCameraPrivate::GetROI()
+cv::Rect XimeaCamera::GetROI()
 {
    int w, h, x, y;
    Check(xiGetParamInt(xiH, XI_PRM_WIDTH, &w));
@@ -261,7 +261,7 @@ cv::Rect XimeaCameraPrivate::GetROI()
    return cv::Rect(x, y, w, h);
 }
 
-void XimeaCameraPrivate::SetFullROI()
+void XimeaCamera::SetFullROI()
 {
    int w, h, x, y;
    Check(xiGetParamInt(xiH, XI_PRM_WIDTH XI_PRM_INFO_MAX, &w));
@@ -277,7 +277,7 @@ void XimeaCameraPrivate::SetFullROI()
 
 
 
-void XimeaCameraPrivate::SetROI(cv::Rect roi)
+void XimeaCamera::SetROI(cv::Rect roi)
 {
    Check(xiSetParamInt(xiH, XI_PRM_WIDTH, roi.width));
    Check(xiSetParamInt(xiH, XI_PRM_HEIGHT, roi.height));
@@ -286,14 +286,14 @@ void XimeaCameraPrivate::SetROI(cv::Rect roi)
 }
 
 
-std::shared_ptr<ImageBuffer> XimeaCameraPrivate::GrabImage()
+std::shared_ptr<ImageBuffer> XimeaCamera::GrabImage()
 {
    // TODO
 
    return std::shared_ptr<ImageBuffer>(nullptr);
 }
 
-void XimeaCameraPrivate::run()
+void XimeaCamera::run()
 {
    XI_RETURN errorValue;
    XI_IMG img;
@@ -314,9 +314,9 @@ void XimeaCameraPrivate::run()
       //img.bp_size = max_buffer_size;
       //img.bp = GetUnusedBuffer();
 
-      errorValue = xiGetImage(xiH, 1000, &img);
+      errorValue = xiGetImage(xiH, 5000, &img);
       
-      if (terminate)
+         if (terminate)
          break;
 
       if (errorValue == XI_OK)
@@ -347,7 +347,7 @@ void XimeaCameraPrivate::run()
    TerminateStreaming();
 }
 
-void XimeaCameraPrivate::FlushBuffers()
+void XimeaCamera::FlushBuffers()
 {
    // Do nothing
 }
@@ -357,13 +357,13 @@ void XimeaCameraPrivate::FlushBuffers()
 
 
 
-XimeaCameraPrivate::~XimeaCameraPrivate()
+XimeaCamera::~XimeaCamera()
 {
    if (xiH)
       xiCloseDevice(xiH);
 }
 
-void XimeaCameraPrivate::SetIntegrationTime(int integration_time_ms)
+void XimeaCamera::SetIntegrationTime(int integration_time_ms)
 {
    integration_time_us = integration_time_ms * 1000;
 
@@ -372,7 +372,7 @@ void XimeaCameraPrivate::SetIntegrationTime(int integration_time_ms)
 }
 
 
-void XimeaCameraPrivate::GetImage(cv::Mat& cv_output)
+void XimeaCamera::GetImage(cv::Mat& cv_output)
 {
 //   Check(xiGetImage(xiH, timeout_ms, &image));
 //   cv::Mat cv_image(image.height, image.width, CV_8U, image.bp);
