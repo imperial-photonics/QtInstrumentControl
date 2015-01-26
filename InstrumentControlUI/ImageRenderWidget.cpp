@@ -63,7 +63,7 @@ ImageRenderWidget::ImageRenderWidget(QWidget *parent)
 
    timer = new QTimer(this);
    connect(timer, &QTimer::timeout, this, &ImageRenderWidget::GetImageFromSource);
-   timer->start(150); // update at 20hz
+   timer->start(16);
 
 }
 
