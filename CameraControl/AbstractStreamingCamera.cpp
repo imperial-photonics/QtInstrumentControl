@@ -82,6 +82,7 @@ void AbstractStreamingCamera::QueueAllBuffers()
 
 void AbstractStreamingCamera::QueuePointer(unsigned char* ptr)
 {
+   QueuePointerWithCamera(ptr);
    unused_buffers.push_back(ptr);
 }
 

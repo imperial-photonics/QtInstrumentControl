@@ -37,7 +37,7 @@ void SOFTCHECK(int err)
 int main(int argc, char *argv[])
 {
    thread camera_thread;
-   XimeaCameraPrivate* camera;
+   XimeaCamera* camera;
 
    bool setup = false;
    mutex m;
