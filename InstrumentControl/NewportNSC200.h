@@ -17,6 +17,8 @@ public:
 
       if (stage_type == "NSR1")
          units = "deg";
+
+      StartThread();
    }
 
 protected:
