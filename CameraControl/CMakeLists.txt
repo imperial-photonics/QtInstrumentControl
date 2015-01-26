@@ -25,7 +25,6 @@ set(CMAKE_AUTOMOC ON)
 # Source Files
 #====================================
 if (INCLUDE_CAMERA_ANDOR)
-   message("hello")
    set(ANDOR_SOURCE
       AndorCamera.cpp
       AndorCamera.h
