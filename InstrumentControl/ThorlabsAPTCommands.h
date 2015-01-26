@@ -1,5 +1,9 @@
 #pragma once
 
+const quint16 TDC001_pot_win_params[4] = { 20, 50, 80, 100 };
+const qint32 TDC001_pot_vel_params[4] = { 42942, 214708, 429417, 858833 };
+const qint32 TDC001_pot_disabled_vel_params[4] = { 1000, 1000, 1000, 1000 }; // minimum to not cause issues
+
 #define MGMSG_HUB_GET_BAYUSED 0x0066
 #define MGMSG_HUB_REQ_BAYUSED 0x0065
 #define MGMSG_HW_DISCONNECT 0x0002

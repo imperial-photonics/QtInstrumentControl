@@ -24,7 +24,21 @@ public:
 
    const QString& GetUnits() { return units; }
 
+   bool IsConnected() { return connected; }
+   bool IsOperational() { return connected & homed; }
+
+   void SetMaxPosition(double max_position);
+   void SetMinPosition(double max_position);
+   void SetAllowManualControl(bool allow_manual_control);
+
    void Init();
+
+signals:
+
+   void Operational(); // connected and homed
+   void Disconnected();
+   void PositionChanged(double position);
+   void MoveFinished(double position);
 
 protected:
 
@@ -32,10 +46,13 @@ protected:
    void MonitorConnection();
    
    void SendCommand(uint16_t command, char param1 = 0, char param2 = 0, bool more_data = false);
-   void SendCommandWithData(uint16_t command, QByteArray data, char param1 = 0, char param2 = 0);
+   void SendCommandWithData(uint16_t command, QByteArray data);
    QByteArray ReadBytes(unsigned int n_bytes, int timeout_ms = 500);
    void ResponseReader();
-   void WaitForStatusUpdate();
+   bool WaitForStatusUpdate(int timeout_ms);
+
+   void EnablePotSwitch(bool enabled);
+   void EnableJogButtons(bool enabled);
 
    void ProcessHardwareInformationMessage(QDataStream& data);
    void ProcessStatusMessage(QDataStream& data, bool short_version = false);
@@ -57,6 +74,7 @@ protected:
    QString units;
    QString controller_type;
 
+   double target_position = 0;
    double cur_position = 0;
    double cur_velocity = 0;
    double max_velocity = 0;
@@ -67,5 +85,11 @@ protected:
    bool in_motion = false;
    bool has_status = false;
    bool watchdog_reset = false;
+
+   double min_position = 0;
+   double max_position = 360;
+   bool enforce_limits = true;
+
+   std::recursive_mutex send_mutex;
 
 };

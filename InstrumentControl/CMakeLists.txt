@@ -22,6 +22,7 @@ set(SOURCE
    ThorlabsAPTController.cpp
    ImageSource.cpp
    ThreadedObject.cpp
+   AbstractImageWriter.cpp
 )
 
 
@@ -36,6 +37,7 @@ set(HEADERS
    FTD2XX.h
    ThorlabsAPTController.h
    ImageSource.h
+   AbstractImageWriter.h
 )
 
 # manually add include directories since we're not linking libraries in

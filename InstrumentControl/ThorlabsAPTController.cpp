@@ -132,6 +132,7 @@ ThorlabsAPTController::ThorlabsAPTController(const QString& controller_type, con
 ThorlabsAPTController::~ThorlabsAPTController()
 {
    connected = false;
+   emit Disconnected();
 
    if (reader_thread.joinable())
       reader_thread.join();
@@ -141,6 +142,15 @@ void ThorlabsAPTController::ConnectToDevice(int dev_index)
 {
    if (device != nullptr)
    {
+      /*
+      try
+      {
+         SendCommand(MGMSG_MOT_SUSPEND_ENDOFMOVEMSGS, 1);
+         SendCommand(MGMSG_HW_STOP_UPDATEMSGS);
+      } catch (std::exception e)
+      { }
+      */
+
       FT_Close(device);
       device = nullptr;
    }
@@ -182,7 +192,6 @@ void ThorlabsAPTController::ConnectToDevice(int dev_index)
    Check(FT_SetEventNotification(device, FT_EVENT_RXCHAR, event_handle));
 
    connected = true;
-
 }
 
 void ThorlabsAPTController::MonitorConnection()
@@ -190,65 +199,118 @@ void ThorlabsAPTController::MonitorConnection()
    if (connected && watchdog_reset)
    {
       watchdog_reset = false;
-      return;
    }
-
-   cout << "Not connected... attempting to connect to APT controller\n";
-
-   connected = false;
-   if (reader_thread.joinable())
-      reader_thread.join();
-
-   try
+   else
    {
-      ConnectToDevice(0);
 
-      reader_thread = std::thread(&ThorlabsAPTController::ResponseReader, this);
-      QThread::msleep(500);
+      cout << "Not connected... attempting to connect to APT controller\n";
 
-      SendCommand(MGMSG_HW_REQ_INFO); // Request hardware info
-      SendCommand(MGMSG_MOD_SET_CHANENABLESTATE, 1, 1); // Enable motor on channel 1
-      SendCommand(MGMSG_MOT_RESUME_ENDOFMOVEMSGS, 1, 0); // Make sure we get responses
-      SendCommand(MGMSG_HW_START_UPDATEMSGS, 2); // Update messages 2Hz update rate
-      SendCommand(MGMSG_MOT_REQ_DCSTATUSUPDATE, 1);
+      connected = false;
+      homed = false;
+      Disconnected();
 
-      WaitForStatusUpdate();
+      if (reader_thread.joinable())
+         reader_thread.join();
 
-      // Make sure device is homed
-      if (!homed)
-         SendCommand(MGMSG_MOT_MOVE_HOME, 1);
+      try
+      {
+         ConnectToDevice(0);
 
+         reader_thread = std::thread(&ThorlabsAPTController::ResponseReader, this);
+         QThread::msleep(100);
+
+         SendCommand(MGMSG_HW_REQ_INFO); // Request hardware info
+         SendCommand(MGMSG_MOD_SET_CHANENABLESTATE, 1, 1); // Enable motor on channel 1
+         SendCommand(MGMSG_MOT_RESUME_ENDOFMOVEMSGS, 1, 0); // Make sure we get responses
+         SendCommand(MGMSG_HW_START_UPDATEMSGS, 2); // Update messages 2Hz update rate
+         SendCommand(MGMSG_MOT_REQ_DCSTATUSUPDATE, 1);
+        
+         bool a = WaitForStatusUpdate(1000);
+
+         // Make sure device is homed
+         if (!homed)
+            SendCommand(MGMSG_MOT_MOVE_HOME, 1);
+         else
+         {
+            QThread::msleep(100);
+            emit Operational();
+         }
+
+      }
+      catch (std::exception e)
+      {
+         std::cout << "Could not connect to Thorlabs APT controller : \n  ";
+         std::cout << e.what() << "\n\n";
+      }
    }
-   catch (std::exception e)
-   {
-      std::cout << "Could not connect to Thorlabs APT controller : \n  ";
-      std::cout << e.what() << "\n\n";
-   }
-
+   // Setup timer to monitor connection
+   connection_timer->start(5000);
 }
 
-void ThorlabsAPTController::WaitForStatusUpdate()
+bool ThorlabsAPTController::WaitForStatusUpdate(int timeout_ms)
 {
    unique_lock<mutex> lk(status_mutex);
    has_status = false;
+   //status_cv.wait_for(lk, std::chrono::milliseconds(timeout_ms), [this]{ return has_status; });
    status_cv.wait(lk, [this]{ return has_status; });
+
+   return has_status;
 }
 
 void ThorlabsAPTController::Init()
 {
+   connection_timer = new QTimer(this);
+   connection_timer->setSingleShot(true);
+   connect(connection_timer, &QTimer::timeout, this, &ThorlabsAPTController::MonitorConnection);
+   
+
    // Attempt to connect to controller
    MonitorConnection();
+}
 
-   // Setup timer to monitor connection
-   connection_timer = new QTimer(this);
-   connect(connection_timer, &QTimer::timeout, this, &ThorlabsAPTController::MonitorConnection);
-   connection_timer->start(2000);
+void ThorlabsAPTController::EnablePotSwitch(bool enabled)
+{
+   QByteArray data;
+   QDataStream ds(&data, QIODevice::WriteOnly);
+   ds.setByteOrder(QDataStream::LittleEndian);
+
+   quint16 channel = 1;
+   const quint16 *win = TDC001_pot_win_params;
+   const qint32 *vel = enabled ? TDC001_pot_vel_params : TDC001_pot_disabled_vel_params;
+
+   ds << channel << win[0] << vel[0] << win[1] << vel[1] << win[2] << vel[2] << win[3] << vel[3];
+
+   SendCommandWithData(MGMSG_MOT_SET_POTPARAMS, data);
+}
+
+
+void ThorlabsAPTController::EnableJogButtons(bool enabled)
+{
+   QByteArray data;
+   QDataStream ds(&data, QIODevice::WriteOnly);
+   ds.setByteOrder(QDataStream::LittleEndian);
+
+   quint16 channel = 1;
+   quint16 mode = enabled ? 0x01 : 0x00;
+   qint32 position = 0;
+   
+   ds << channel << mode << position << position;
+
+   SendCommandWithData(MGMSG_MOT_SET_BUTTONPARAMS, data);
 }
 
 void ThorlabsAPTController::SetPosition(double position_)
 {
    if (!connected)
       return;
+
+   if (position_ < min_position)
+      position_ = min_position;
+   if (position_ > max_position)
+      position_ = max_position;
+
+   std::cout << "Setting position: " << position_ << "\n";
+   target_position = position_;
 
    QByteArray data;
    QDataStream ds(&data, QIODevice::WriteOnly);
@@ -259,17 +321,46 @@ void ThorlabsAPTController::SetPosition(double position_)
 
    ds << channel << position;
 
-   SendCommandWithData(MGMSG_MOT_MOVE_ABSOLUTE, data, 6);
+   SendCommandWithData(MGMSG_MOT_MOVE_ABSOLUTE, data);
 }
+
+void ThorlabsAPTController::SetMaxPosition(double max_position_)
+{
+   if (cur_position > max_position_)
+      SetPosition(max_position_);
+
+   max_position = max_position_;
+   enforce_limits = true;
+
+}
+
+void ThorlabsAPTController::SetMinPosition(double min_position_)
+{
+   if (cur_position < min_position_)
+      SetPosition(min_position_);
+
+   min_position = min_position_;
+   enforce_limits = true;
+
+}
+
+void ThorlabsAPTController::SetAllowManualControl(bool allow_manual_control)
+{
+   EnableJogButtons(allow_manual_control);
+   EnablePotSwitch(allow_manual_control);
+}
+
 
 void ThorlabsAPTController::SendCommand(uint16_t command, char param1, char param2, bool more_data)
 {
+   lock_guard<recursive_mutex> lk(send_mutex);
+
    char src = 0x01; // host PC
    char dest = 0x50; // USB unit
 
    if (more_data)
       dest |= 0x80;
-
+    
    char* cmd = reinterpret_cast<char*>(&command);
  
    unsigned char tx[6];
@@ -282,11 +373,17 @@ void ThorlabsAPTController::SendCommand(uint16_t command, char param1, char para
 
    DWORD bytes_written;
    Check(FT_Write(device, reinterpret_cast<void*>(tx), 6, &bytes_written));
+
+   if (bytes_written != 6)
+      int a = 1;
 }
 
-void ThorlabsAPTController::SendCommandWithData(uint16_t command, QByteArray data, char param1, char param2)
+void ThorlabsAPTController::SendCommandWithData(uint16_t command, QByteArray data)
 {
-   SendCommand(command, param1, param2, true);
+   lock_guard<recursive_mutex> lk(send_mutex);
+
+   char size = data.size();
+   SendCommand(command, size, 0, true);
 
    DWORD bytes_written;
 
@@ -295,7 +392,6 @@ void ThorlabsAPTController::SendCommandWithData(uint16_t command, QByteArray dat
    char* data_ptr = const_cast<char*>(data_c_ptr);
 
    Check(FT_Write(device, data_ptr, data.size(), &bytes_written));
-
 }
 
 QByteArray ThorlabsAPTController::ReadBytes(unsigned int n_bytes, int timeout_ms)
@@ -381,10 +477,6 @@ void ThorlabsAPTController::ResponseReader()
                   ProcessVelocityParamsMessage(ds);
                   break;
 
-               case MGMSG_MOT_MOVE_HOMED:
-                  position_zero = cur_position;
-                  break;
-
                   // all these messages are followed by status message
                case MGMSG_MOT_MOVE_COMPLETED:
                case MGMSG_MOT_MOVE_STOPPED:
@@ -394,6 +486,19 @@ void ThorlabsAPTController::ResponseReader()
 
                case MGMSG_MOT_GET_STATUSBITS:
                   ProcessStatusMessage(ds, true);
+                  break;
+
+               case MGMSG_MOT_GET_POTPARAMS:
+
+                  quint16 channel, wnd[4];
+                  qint32 vel[4];
+
+                  ds >> channel >> wnd[0] >> vel[0]
+                     >> wnd[1] >> vel[1]
+                     >> wnd[2] >> vel[2]
+                     >> wnd[3] >> vel[3];
+
+
                   break;
 
                   // The following messages are currently ignored
@@ -406,7 +511,6 @@ void ThorlabsAPTController::ResponseReader()
                case MGMSG_MOT_GET_LIMSWITCHPARAMS:
                case MGMSG_MOT_GET_DCPIDPARAMS:
                case MGMSG_MOT_GET_AVMODES:
-               case MGMSG_MOT_GET_POTPARAMS:
                case MGMSG_MOT_GET_BUTTONPARAMS:
                   break;
 
@@ -418,8 +522,15 @@ void ThorlabsAPTController::ResponseReader()
             int a;
             switch (response)
             {
+            case MGMSG_MOT_MOVE_HOMED:
+               //position_zero = cur_position;
+               homed = true;
+               emit Operational();
+               break;
+
             case MGMSG_HW_DISCONNECT:
                connected = false;
+               emit Disconnected();
                break;
 
             case MGMSG_HW_RESPONSE:
@@ -433,7 +544,7 @@ void ThorlabsAPTController::ResponseReader()
             }
          }
 
-      }
+      } 
    }
 }
 
@@ -455,13 +566,18 @@ void ThorlabsAPTController::ProcessStatusMessage(QDataStream& ds, bool short_ver
       cur_position = position / position_factor - position_zero;
       cur_velocity = velocity / velocity_factor;
 
-      cout << "Last position:" << cur_position << "\n";
-      cout << "Last velocity:" << cur_velocity << "\n";
+      emit PositionChanged(cur_position);
+
+      //cout << "Last position:" << cur_position << "\n";
+      //cout << "Last velocity:" << cur_velocity << "\n";
    }
 
    // Read status bits;
    homed = status & 0x400;
-   in_motion = status & (0x10 | 0x20 | 0x40 | 0x80 | 0x200);
+   bool in_motion_ = status & (0x10 | 0x20 | 0x40 | 0x80 | 0x200);
+
+   if (in_motion & !in_motion) // just stopped moving
+      emit MoveFinished(cur_position);
 
    bool forward_hw_limit = status & 0x1;
    bool rev_hw_limit = status & 0x2;
@@ -472,6 +588,16 @@ void ThorlabsAPTController::ProcessStatusMessage(QDataStream& ds, bool short_ver
    bool motor_overcurrent = status & 0x01000000;
 
    SendCommand(MGMSG_MOT_ACK_DCSTATUSUPDATE);
+
+   if (enforce_limits & homed & !in_motion)
+   {
+      int tol = 1;
+      if (cur_position > (max_position+tol))
+         SetPosition(max_position);
+      if (cur_position < (min_position-tol))
+         SetPosition(min_position);
+   }
+
 
    lock_guard<mutex> lk(status_mutex);
    has_status = true;

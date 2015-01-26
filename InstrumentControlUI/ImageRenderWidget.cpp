@@ -21,8 +21,12 @@ QImage CopyToQImage(cv::Mat& cv_image, int bit_shift)
       if (image_type == CV_8U)
       {
          unsigned char* data_ptr = cv_image.row(y).data;
-         for (int x=0; x < size.width; x++)
-            image_ptr[x] = data_ptr[x];
+         for (int x = 0; x < size.width; x++)
+         {
+            unsigned char d = data_ptr[x] << (8 - bit_shift);
+            image_ptr[x] = d;
+         }
+
       }
       else if (image_type == CV_16U)
       {
