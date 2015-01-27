@@ -1,10 +1,11 @@
 #include "AndorControlDisplay.h"
 #include "XimeaControlDisplay.h"
-
+#include "ImageRenderWindow.h"
 #include <QApplication>
 #include <QInputDialog>
 #include <QErrorMessage>
-
+#include <QVBoxLayout>
+#include <QPushButton>
 #include <iostream>
 
 
@@ -48,7 +49,27 @@ int main(int argc, char *argv[])
    camera = GetXimeaFromUser();
 
    XimeaControlDisplay display(camera);
-   display.show();
+   
+   ImageRenderWindow* render_win = new ImageRenderWindow("Camera", camera);
+
+   QWidget* win = new QWidget;
+   QVBoxLayout* layout = new QVBoxLayout;
+   QPushButton* button = new QPushButton;
+
+   button->setText("Streaming");
+   button->setCheckable(true);
+
+   QObject::connect(button, &QPushButton::toggled, camera, &AbstractStreamingCamera::SetStreamingStatus, Qt::DirectConnection);
+   QObject::connect(camera, &AbstractStreamingCamera::StreamingStatusChanged, button, &QPushButton::setChecked, Qt::QueuedConnection);
+
+   layout->addWidget(&display);
+   layout->addWidget(button);
+
+   win->setLayout(layout);
+   win->show();
+
+   render_win->show();
+
 
    qapp.exec();
 }

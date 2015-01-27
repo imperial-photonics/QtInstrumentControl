@@ -16,7 +16,8 @@ AbstractStreamingCamera::AbstractStreamingCamera(QObject* parent) :
    init(false), allocation_idx(0),
    is_streaming(false), terminate(false)
 {
-   connect(parent, &QObject::destroyed, this, &QObject::deleteLater);
+   if (parent != nullptr)
+      connect(parent, &QObject::destroyed, this, &QObject::deleteLater);
 
    m = new QMutex();
    next_mutex = new QMutex();

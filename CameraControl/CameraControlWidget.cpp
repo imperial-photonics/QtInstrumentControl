@@ -291,6 +291,7 @@ void CameraControlWidget::SendValueToCamera()
 
    try
    {
+      std::cout << "Setting parameter: " << control.toStdString() << " = " << proposed_value.toString().toStdString() << "\n";
       camera->SetParameter(control, type, proposed_value);
    }
    catch (std::exception e)

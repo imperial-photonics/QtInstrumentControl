@@ -13,10 +13,10 @@ find_package(Qt5OpenGL REQUIRED)
 
 find_package(OpenCV REQUIRED)
 
-include_directories(${CameraControl_INCLUDE_DIR})
+include_directories(${CameraControl_INCLUDE_DIR} ${InstrumentControlUI_INCLUDE_DIR} )
 
 
-add_executable(CameraControlTest AndorTest.cpp)
+add_executable(CameraControlTest AndorTest.cpp $<TARGET_OBJECTS:InstrumentControlUI>)
 
 qt5_use_modules(CameraControlTest Widgets PrintSupport OpenGL Gui)
 

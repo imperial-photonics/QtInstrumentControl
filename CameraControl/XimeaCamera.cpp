@@ -56,9 +56,9 @@ XimeaCamera::XimeaCamera(int camera_idx, QObject* parent) :
 
    int max_n_bytes = max_width * max_height * 4; // worst case 4 bytes
 
-   Check(xiSetParamInt(xiH, XI_PRM_BUFFERS_QUEUE_SIZE, n_buffer));
+   Check(xiSetParamInt(xiH, XI_PRM_BUFFERS_QUEUE_SIZE, 10));
    Check(xiSetParamInt(xiH, XI_PRM_ACQ_BUFFER_SIZE, max_n_bytes * n_buffer));
-   Check(xiSetParamInt(xiH, XI_PRM_BUFFER_POLICY, XI_BP_UNSAFE)); // we're going to provide our own CUDA buffers
+   Check(xiSetParamInt(xiH, XI_PRM_BUFFER_POLICY, XI_BP_SAFE)); // we're going to provide our own CUDA buffers
 
    AllocateBuffers(max_n_bytes);
 
@@ -204,6 +204,7 @@ EnumerationList XimeaCamera::GetEnumerationList(const QString& parameter)
       Add("RGB 24", XI_RGB24);
       Add("RGB Planar", XI_RGB_PLANAR);
       Add("Packed", XI_FRM_TRANSPORT_DATA);
+      Add("Dummy", 100);
    }
 
    return list;
@@ -311,8 +312,8 @@ void XimeaCamera::run()
 
    while (!terminate)
    {
-      //img.bp_size = max_buffer_size;
-      //img.bp = GetUnusedBuffer();
+      img.bp_size = max_buffer_size;
+      img.bp = GetUnusedBuffer();
 
       errorValue = xiGetImage(xiH, 5000, &img);
       
@@ -321,10 +322,7 @@ void XimeaCamera::run()
 
       if (errorValue == XI_OK)
       {
-         auto buf = GetUnusedBuffer();
-         memcpy(buf, img.bp, img.width * img.height * bytes_per_pixel );
-
-         cv::Mat image(image_size, image_type, buf);
+         cv::Mat image(image_size, image_type, img.bp);
          SetLatest(image);
       }
       /*
