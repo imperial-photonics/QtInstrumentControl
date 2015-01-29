@@ -26,6 +26,7 @@ set(HEADERS
    ImageRenderWidget.h
    ImageRenderWindow.h
    ImageSeriesControl.h
+   ImageSeriesScanner.h
 )
 
 # manually add include directories since we're not linking libraries in
