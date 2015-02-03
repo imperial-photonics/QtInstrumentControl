@@ -58,7 +58,7 @@ private:
    std::vector<cv::Mat> buffer;
 
    cv::Size buffer_image_size;
-   int buffer_image_type;
+   int buffer_image_type = CV_16U;
 
-   int buffer_size;
+   int buffer_size = 100;
 };
