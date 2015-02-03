@@ -2,15 +2,15 @@
 #include "AbstractStreamingCamera.h"
 
 
-ImageBuffer::ImageBuffer() :
-   is_null(true)
+ImageBuffer::ImageBuffer()
 {
    image = cv::Mat::zeros(128, 128, CV_8U);
 }
 
-ImageBuffer::ImageBuffer(cv::Mat image, cv::Mat& background, AbstractStreamingCamera* camera) :
+ImageBuffer::ImageBuffer(cv::Mat image, cv::Mat& background, AbstractStreamingCamera* camera, int image_index) :
    camera(camera), 
    image(image),
+   image_index(image_index),
    is_null(false)
 {
    allocation_idx = camera->allocation_idx;

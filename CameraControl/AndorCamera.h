@@ -27,6 +27,7 @@ public:
 
    void   SetROI(cv::Rect roi);
    void   SetFullROI();
+   void SetUseExternalTriggering(bool use_external_triggering);
 
    void SetParameter(const QString& parameter, ParameterType type, QVariant value);
    QVariant GetParameter(const QString& parameter, ParameterType type);

@@ -81,13 +81,20 @@ void AbstractStreamingCamera::QueueAllBuffers()
       QueuePointer(buffer);
 }
 
+/*
+   Call to return a used buffer to the queue.
+   Generally called from ImageBuffer
+*/
 void AbstractStreamingCamera::QueuePointer(unsigned char* ptr)
 {
    QueuePointerWithCamera(ptr);
    unused_buffers.push_back(ptr);
 }
 
-
+/*
+   Wrapper for memory allocation, use cuda pinned memory if possible,
+   otherwise just malloc
+*/
 void AbstractStreamingCamera::AllocateMemory(void** ptr, int size)
 {
 #ifdef USE_CUDA
@@ -97,6 +104,9 @@ void AbstractStreamingCamera::AllocateMemory(void** ptr, int size)
 #endif
 }
 
+/*
+   Wrapper for memory free
+*/
 void AbstractStreamingCamera::FreeMemory(void* ptr)
 {
 #ifdef USE_CUDA
@@ -139,6 +149,9 @@ void AbstractStreamingCamera::AllocateBuffers(int buffer_size_)
    init = true;
 }
 
+/*
+   Call this function to get a new buffer to store an image during streaming
+*/
 unsigned char* AbstractStreamingCamera::GetUnusedBuffer()
 {
    if (unused_buffers.empty())
@@ -150,16 +163,23 @@ unsigned char* AbstractStreamingCamera::GetUnusedBuffer()
    return buf;
 }
    
+/*
+   Call this function from the streaming thread with new image data
+*/
 void AbstractStreamingCamera::SetLatest(cv::Mat& image)
 {
    QMutexLocker lk(m);
-   latest_data = shared_ptr<ImageBuffer>( new Buf(image, background, this) );
+   latest_data = shared_ptr<ImageBuffer>( new ImageBuffer(image, background, this, image_index++) );
    lk.unlock();
 
    emit NewImage();
    next_cv.wakeAll();
 }
 
+/*
+   Turn streaming on or off
+   Call this function directly from the main thread
+*/
 void AbstractStreamingCamera::SetStreamingStatus(bool streaming_)
 {
    if (streaming_)
@@ -179,19 +199,22 @@ void AbstractStreamingCamera::SetStreamingStatus(bool streaming_)
       
       terminate = false;
       is_streaming = true;
+      image_index = 0;
 
       worker_thread->start();
-
-//      QThread::sleep(1); 
    }
    else
    {
-      // Try and tell the thread to quit
+      // Try and tell the thread to quit and wait until it does
       terminate = true;
-
+      while (is_streaming) {};
    }
 }
 
+/*
+   Call this function just before the streaming thread finishes
+   to clean up the buffers and notify listeners
+*/
 void AbstractStreamingCamera::TerminateStreaming()
 {
    if (is_streaming)
@@ -206,13 +229,18 @@ void AbstractStreamingCamera::TerminateStreaming()
    }
 }
 
-
+/*
+   Discard the stored background
+*/
 void AbstractStreamingCamera::ClearBackground()
 {
    background = cv::Mat();
    emit NewBackground();
 }
 
+/*
+   Collect a new background by averaging a number of frames
+*/
 void AbstractStreamingCamera::UpdateBackground()
 {
    cv::Size image_size = GetImageSize();

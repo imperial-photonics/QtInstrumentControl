@@ -43,6 +43,8 @@ public:
    virtual double GetPixelSize() = 0;
    virtual cv::Rect GetROI() = 0;
 
+   virtual void SetUseExternalTriggering(bool use_external_triggering) = 0;
+
    virtual void SetParameter(const QString& parameter, ParameterType type, QVariant value) = 0;
    virtual QVariant GetParameter(const QString& parameter, ParameterType type) = 0;
    virtual QVariant GetParameterLimit(const QString& parameter, ParameterType type, Limit limit) = 0;
@@ -126,6 +128,8 @@ protected:
    QMutex* next_mutex;
 
    bool controls_locked = false;
+
+   int image_index;
 
 private:
 

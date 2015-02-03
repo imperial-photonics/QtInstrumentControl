@@ -70,6 +70,15 @@ QWidget* XimeaCamera::GetControlWidget(QWidget* parent)
    return new XimeaControlDisplay(this, parent);
 }
 
+void XimeaCamera::SetUseExternalTriggering(bool use_external_triggering)
+{
+   if (use_external_triggering)
+      SetParameter(XI_PRM_TRG_SOURCE, Integer, XI_TRG_EDGE_RISING);
+   else
+      SetParameter(XI_PRM_TRG_SOURCE, Integer, XI_TRG_OFF);
+
+}
+
 void XimeaCamera::SetParameter(const QString& parameter, ParameterType type, QVariant value)
 {
    QByteArray b = parameter.toUtf8();

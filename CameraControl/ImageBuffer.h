@@ -12,7 +12,7 @@ class ImageBuffer
 {
 public:
    ImageBuffer();
-   ImageBuffer(cv::Mat image, cv::Mat& background, AbstractStreamingCamera* camera);
+   ImageBuffer(cv::Mat image, cv::Mat& background, AbstractStreamingCamera* camera, int image_index);
 
    cv::Mat& GetImage();
    cv::Mat& GetBackgroundSubtractedImage();
@@ -23,8 +23,9 @@ private:
    AbstractStreamingCamera* camera;
    cv::Mat image;
    cv::Mat background_subtracted;
-   bool is_null;
-   int allocation_idx;
+   bool is_null = true;
+   int allocation_idx = -1;
+   int image_index = 0;
 };
 
 typedef ImageBuffer Buf; // temporary while refactoring
