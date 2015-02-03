@@ -60,6 +60,9 @@ void ImageWriter::SetActive(bool active_)
    if (active_ && folder.isEmpty())
       GetFolder();
 
+   if (active_)
+      InitBuffer();
+
    active = active_;
    file_idx = 0;
 
@@ -105,14 +108,15 @@ void ImageWriter::ImageUpdated()
       //cv::imwrite(filename.str(), buf->GetBackgroundSubtractedImage());
 
       file_idx++;
+
+      if (file_idx == buffer.size())
+      {
+         active = false;
+         emit ActiveStateChanged(active);
+         WriteBuffer();
+      }
    }
 
-   if (file_idx == buffer.size())
-   {
-      active = false;
-      emit ActiveStateChanged(active);
-      WriteBuffer();
-   }
 }
 
 void ImageWriter::WriteBuffer()
