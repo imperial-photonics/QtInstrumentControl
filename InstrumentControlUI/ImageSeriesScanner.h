@@ -87,6 +87,7 @@ public:
 
          float position = start + i*step;
          SetPosition(position);
+         QThread::msleep(500);
          // slm->WaitForNextUpdate(); // TODO
 
          cv::Mat m = image_sources[image_source_index]->GetNextImage();
