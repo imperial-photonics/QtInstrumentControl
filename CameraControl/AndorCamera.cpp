@@ -457,10 +457,12 @@ void AndorCamera::SetROI(cv::Rect roi)
    SOFTCHECK(AT_SetInt(Hndl, L"AOITop", roi.y));
 }
 
-void AndorCamera::SetUseExternalTriggering(bool use_external_triggering)
+void AndorCamera::SetTriggerMode(TriggerMode trigger_mode)
 {
-   if (use_external_triggering)
-      AT_SetEnumeratedString(Hndl, L"TriggerMode", L"External");
+   if (trigger_mode == Internal)
+      AT_SetEnumeratedString(Hndl, L"TriggerMode", L"Internal");
+   else if (trigger_mode == Software)
+      AT_SetEnumeratedString(Hndl, L"TriggerMode", L"Software");
    else
       AT_SetEnumeratedString(Hndl, L"TriggerMode", L"External");
 }

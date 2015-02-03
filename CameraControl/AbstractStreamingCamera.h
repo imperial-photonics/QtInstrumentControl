@@ -33,6 +33,9 @@ class AbstractStreamingCamera : public QObject, public ImageSource
    Q_OBJECT
 
 public:
+
+   enum TriggerMode { Internal, Software, External };
+
    AbstractStreamingCamera(QObject* parent = 0);
    ~AbstractStreamingCamera();
 
@@ -43,7 +46,7 @@ public:
    virtual double GetPixelSize() = 0;
    virtual cv::Rect GetROI() = 0;
 
-   virtual void SetUseExternalTriggering(bool use_external_triggering) = 0;
+   virtual void SetTriggerMode(TriggerMode trigger_mode) = 0;
 
    virtual void SetParameter(const QString& parameter, ParameterType type, QVariant value) = 0;
    virtual QVariant GetParameter(const QString& parameter, ParameterType type) = 0;

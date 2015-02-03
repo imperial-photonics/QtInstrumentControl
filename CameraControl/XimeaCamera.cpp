@@ -70,13 +70,14 @@ QWidget* XimeaCamera::GetControlWidget(QWidget* parent)
    return new XimeaControlDisplay(this, parent);
 }
 
-void XimeaCamera::SetUseExternalTriggering(bool use_external_triggering)
+void XimeaCamera::SetTriggerMode(TriggerMode trigger_mode)
 {
-   if (use_external_triggering)
-      SetParameter(XI_PRM_TRG_SOURCE, Integer, XI_TRG_EDGE_RISING);
-   else
+   if (trigger_mode == Internal)
       SetParameter(XI_PRM_TRG_SOURCE, Integer, XI_TRG_OFF);
-
+   if (trigger_mode == Software)
+      SetParameter(XI_PRM_TRG_SOURCE, Integer, XI_TRG_SOFTWARE);
+   else
+      SetParameter(XI_PRM_TRG_SOURCE, Integer, XI_TRG_EDGE_RISING);
 }
 
 void XimeaCamera::SetParameter(const QString& parameter, ParameterType type, QVariant value)
