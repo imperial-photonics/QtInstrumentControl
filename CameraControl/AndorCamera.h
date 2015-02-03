@@ -28,6 +28,7 @@ public:
    void   SetROI(cv::Rect roi);
    void   SetFullROI();
    void SetTriggerMode(TriggerMode trigger_mode);
+   void SoftwareTrigger();
 
    void SetParameter(const QString& parameter, ParameterType type, QVariant value);
    QVariant GetParameter(const QString& parameter, ParameterType type);

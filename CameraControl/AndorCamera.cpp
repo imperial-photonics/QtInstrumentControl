@@ -467,6 +467,11 @@ void AndorCamera::SetTriggerMode(TriggerMode trigger_mode)
       AT_SetEnumeratedString(Hndl, L"TriggerMode", L"External");
 }
 
+void AndorCamera::SoftwareTrigger()
+{
+   AT_Command(Hndl, L"SoftwareTrigger");
+}
+
 void AndorCamera::SetFullROI()
 {
    int64_t p;

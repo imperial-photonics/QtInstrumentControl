@@ -47,6 +47,7 @@ public:
    virtual cv::Rect GetROI() = 0;
 
    virtual void SetTriggerMode(TriggerMode trigger_mode) = 0;
+   virtual void SoftwareTrigger() = 0;
 
    virtual void SetParameter(const QString& parameter, ParameterType type, QVariant value) = 0;
    virtual QVariant GetParameter(const QString& parameter, ParameterType type) = 0;

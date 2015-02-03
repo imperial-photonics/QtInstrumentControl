@@ -80,6 +80,11 @@ void XimeaCamera::SetTriggerMode(TriggerMode trigger_mode)
       SetParameter(XI_PRM_TRG_SOURCE, Integer, XI_TRG_EDGE_RISING);
 }
 
+void XimeaCamera::SoftwareTrigger()
+{
+   xiSetParamInt(xiH, XI_PRM_TRG_SOFTWARE, 0);
+}
+
 void XimeaCamera::SetParameter(const QString& parameter, ParameterType type, QVariant value)
 {
    QByteArray b = parameter.toUtf8();

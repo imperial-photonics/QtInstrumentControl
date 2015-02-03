@@ -36,6 +36,7 @@ public:
    void GetImage(cv::Mat& cv_output);
    void SetIntegrationTime(int integration_time_ms_);
    void SetTriggerMode(TriggerMode trigger_mode);
+   void SoftwareTrigger();
 
    void SetParameter(const QString& parameter, ParameterType type, QVariant value);
    QVariant GetParameter(const QString& parameter, ParameterType type);
