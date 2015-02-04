@@ -83,5 +83,6 @@ set(CameraControl_INCLUDE_DIR ${Ximea_DIR}
 set(CameraControl_LIBRARIES ${Ximea_LIBRARIES}
                             ${ANDOR_LIBRARIES}
                             ${CameraControl_CUDA_LIBRARIES} 
+                            ${InstrumentControl_LIBRARIES}
                             ${OpenCV_LIBS} 
                             PARENT_SCOPE)

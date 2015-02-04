@@ -13,8 +13,9 @@ using std::shared_ptr;
 
 
 AbstractStreamingCamera::AbstractStreamingCamera(QObject* parent) :
-   init(false), allocation_idx(0),
-   is_streaming(false), terminate(false)
+   init(false), 
+   allocation_idx(0),
+   terminate(false)
 {
    if (parent != nullptr)
       connect(parent, &QObject::destroyed, this, &QObject::deleteLater);
@@ -64,6 +65,15 @@ cv::Mat AbstractStreamingCamera::GetImage()
    shared_ptr<ImageBuffer> buf = GetLatest();
    return buf->GetBackgroundSubtractedImage().clone();
 }
+
+
+cv::Mat& AbstractStreamingCamera::GetImageUnsafe()
+{
+   // Return a copy of the image so we can safely process
+   shared_ptr<ImageBuffer> buf = GetLatest();
+   return buf->GetImage();
+}
+
 
 cv::Mat AbstractStreamingCamera::GetNextImage()
 {
@@ -190,8 +200,7 @@ void AbstractStreamingCamera::SetStreamingStatus(bool streaming_)
       main_thread = QThread::currentThread();
       worker_thread = new QThread(this);
       worker_thread->setObjectName("Andor Camera");
-      this->moveToThread(worker_thread);
- 
+      
       connect(worker_thread, &QThread::started, this, &AbstractStreamingCamera::run);
       connect(this, &AbstractStreamingCamera::StreamingFinished, [=]() { moveToThread(main_thread); });
       connect(this, &AbstractStreamingCamera::StreamingFinished, worker_thread, &QThread::quit);

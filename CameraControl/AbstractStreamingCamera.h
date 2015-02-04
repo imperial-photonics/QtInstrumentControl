@@ -28,7 +28,7 @@ typedef ParameterType ControlType; // refactoring
 
 typedef QList<QPair<QString, int>> EnumerationList;
 
-class AbstractStreamingCamera : public QObject, public ImageSource
+class AbstractStreamingCamera : public ImageSource
 {
    Q_OBJECT
 
@@ -73,13 +73,13 @@ public:
 
    cv::Mat GetNextImage();
    cv::Mat GetImage();
+   cv::Mat& GetImageUnsafe();
    cv::Mat BackgroundImage();
 
    QMutex* control_mutex;
 
 signals:
    void ImageSizeChanged();
-   void NewImage();
    void NewBackground();
    void StreamingStatusChanged(bool is_streaming);
    void StreamingFinished();
@@ -123,7 +123,6 @@ protected:
    int buffer_size;
    int max_buffer_size;
 
-   bool is_streaming;
    bool terminate;
    QThread* main_thread;
    QThread* worker_thread;

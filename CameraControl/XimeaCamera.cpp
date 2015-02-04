@@ -34,14 +34,20 @@ QStringList XimeaCamera::GetConnectedCameras()
 
 
 XimeaCamera::XimeaCamera(int camera_idx, QObject* parent) :
-   AbstractStreamingCamera(parent)
+AbstractStreamingCamera(parent)
 {
-
    // Don't try and determine bandwidth
    xiSetParamInt(0, XI_PRM_AUTO_BANDWIDTH_CALCULATION, XI_OFF);
 
    // Retrieving a handle to the camera device 
    Check(xiOpenDevice(0, &xiH));
+
+   StartThread();
+}
+
+
+void XimeaCamera::Init()
+{
 
    // Setting "exposure" parameter (1ms)
    //Check(xiSetParam(xiH, XI_PRM_EXPOSURE, &integration_time_us, sizeof(integration_time_us), xiTypeInteger));

@@ -1,16 +1,19 @@
 #include "ImageWriter.h"
 
-using std::shared_ptr;
 
-ImageWriter::ImageWriter(AbstractStreamingCamera* camera, QObject* parent) :
-QObject(parent), camera(camera)
+ImageWriter::ImageWriter(ImageSource* camera, QObject* parent, QThread* thread) :
+ThreadedObject(parent, thread),
+camera(camera)
 {
    file_root = "camera ";
    active = false;
-   connect(camera, &AbstractStreamingCamera::NewImage, this, &ImageWriter::ImageUpdated, Qt::QueuedConnection);
 
-   worker_thread.start();
-   moveToThread(&worker_thread);
+   StartThread();
+}
+
+void ImageWriter::Init()
+{
+   connect(camera, &ImageSource::NewImage, this, &ImageWriter::ImageUpdated, Qt::QueuedConnection);
 };
 
 void ImageWriter::SetFilenameRoot(const QString& file_root_)
@@ -25,7 +28,7 @@ void ImageWriter::ChooseFolder()
 {
    folder = QFileDialog::getExistingDirectory(0, tr("Choose folder"), "R:/");
    QString cf = folder;
-   complete_file_root = cf.append("/").append(file_root).toStdString();
+   complete_file_root = cf.append("/").append(file_root).toStdString(); 
    emit FolderChanged(folder);
 }
 
@@ -71,8 +74,7 @@ void ImageWriter::SetActive(bool active_)
 
 void ImageWriter::InitBuffer()
 {
-   shared_ptr<Buf> buf = camera->GetLatest();
-   cv::Mat& image = buf->GetImage();
+   cv::Mat& image = camera->GetImage();
 
    cv::Size sz = image.size();
    int type = image.type();
@@ -91,36 +93,36 @@ void ImageWriter::SaveSingle()
    if (filename.isEmpty())
       return;
 
-   shared_ptr<Buf> buf = camera->GetLatest();
-   cv::imwrite(filename.toStdString(), buf->GetBackgroundSubtractedImage());
+   cv::Mat m = camera->GetImage();
+   cv::imwrite(filename.toStdString(), m);
 }
 
 void ImageWriter::ImageUpdated()
 {
    if (active)
    {
-      shared_ptr<Buf> buf = camera->GetLatest();
-
-      buf->GetBackgroundSubtractedImage().copyTo(buffer[file_idx]);
-
-      //std::stringstream filename;
-      //filename << complete_file_root << std::setw(5) << std::setfill('0') << file_idx << ".tif";
-      //cv::imwrite(filename.str(), buf->GetBackgroundSubtractedImage());
+      cv::Mat m = camera->GetImageUnsafe();
+      m.copyTo(buffer[file_idx]);
 
       file_idx++;
 
+      emit ProgressUpdated((100.0 * file_idx) / buffer.size());
+
       if (file_idx == buffer.size())
       {
+         emit ProgressUpdated(100);
          active = false;
          emit ActiveStateChanged(active);
          WriteBuffer();
       }
+
    }
 
 }
 
 void ImageWriter::WriteBuffer()
 {
+
    for (int i = 0; i < file_idx; i++)
    {
       std::stringstream filename;

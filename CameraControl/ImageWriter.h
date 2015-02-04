@@ -1,26 +1,26 @@
 #pragma once
 #include <QFileDialog>
-#include <QObject>
-
-#include "AbstractStreamingCamera.h"
+#include "ThreadedObject.h"
+#include "ImageSource.h"
 
 #include <string>
 
 #include <cv.h>
 #include <opencv2/highgui/highgui.hpp>
 
-class ImageWriter : public QObject
+class ImageWriter : public ThreadedObject
 {
    Q_OBJECT
 
 public:
-   ImageWriter(AbstractStreamingCamera* camera, QObject* parent = 0);
+   ImageWriter(ImageSource* camera, QObject* parent = 0, QThread* thread = 0);
 
+   void Init();
    void SaveSingle();
 
    void SetFilenameRoot(const QString& file_root_);
    void SetFolder(const QString& folder_);
-
+   
    void ChooseFolder();
 
    const QString& GetFilenameRoot() { return file_root; }
@@ -40,14 +40,14 @@ signals:
    void FilenameRootChanged(const QString& filename_root);
    void BufferSizeChanged(int buffer_size);
    void ActiveStateChanged(bool active);
-
+   void ProgressUpdated(int progress);
 private:
 
    void WriteBuffer();
    void InitBuffer();
 
 
-   AbstractStreamingCamera* camera;
+   ImageSource* camera;
    bool active;
    int file_idx;
    std::string complete_file_root;

@@ -33,7 +33,7 @@ AndorCamera::AndorCamera(int idx, QObject* parent) :
 
    if (!andor_lib_init__)
    {
-      CHECK(AT_InitialiseLibrary()); 
+      CHECK(AT_InitialiseLibrary());
       andor_lib_init__ = true;
    }
 
@@ -41,6 +41,11 @@ AndorCamera::AndorCamera(int idx, QObject* parent) :
    CHECK(AT_Open(idx, &Hndl));
    n_andor_cameras_connected__++;
 
+   StartThread();
+}
+
+void AndorCamera::Init()
+{
    // Allocate buffers big enough for largest possible image
    //===========================================================
    int64_t max_width, max_height;
