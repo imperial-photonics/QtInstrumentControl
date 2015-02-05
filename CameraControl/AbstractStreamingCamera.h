@@ -73,7 +73,7 @@ public:
 
    cv::Mat GetNextImage();
    cv::Mat GetImage();
-   cv::Mat& GetImageUnsafe();
+   cv::Mat GetImageUnsafe();
    cv::Mat BackgroundImage();
 
    QMutex* control_mutex;
@@ -131,6 +131,7 @@ protected:
    QMutex* next_mutex;
 
    bool controls_locked = false;
+   bool is_streaming = false;
 
    int image_index;
 

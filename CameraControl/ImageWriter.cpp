@@ -64,7 +64,10 @@ void ImageWriter::SetActive(bool active_)
       GetFolder();
 
    if (active_)
+   {
       InitBuffer();
+      camera->SetImageProductionStatus(true);
+   }
 
    active = active_;
    file_idx = 0;
@@ -114,6 +117,7 @@ void ImageWriter::ImageUpdated()
          active = false;
          emit ActiveStateChanged(active);
          WriteBuffer();
+         camera->SetImageProductionStatus(false);
       }
 
    }

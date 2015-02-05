@@ -67,7 +67,7 @@ cv::Mat AbstractStreamingCamera::GetImage()
 }
 
 
-cv::Mat& AbstractStreamingCamera::GetImageUnsafe()
+cv::Mat AbstractStreamingCamera::GetImageUnsafe()
 {
    // Return a copy of the image so we can safely process
    shared_ptr<ImageBuffer> buf = GetLatest();

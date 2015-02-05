@@ -20,16 +20,16 @@ public:
 
    // override to return an unsafe reference to the current image
    // any calling function should use it quickly!
-   virtual cv::Mat& GetImageUnsafe() = 0;
+   virtual cv::Mat GetImageUnsafe() = 0;
 
    virtual cv::Mat GetNextImage() { return GetImage(); };
 
-   virtual void SetStreamingStatus(bool streaming_) {};
-   virtual bool GetStreamingStatus() { return false; }
+   virtual void SetImageProductionStatus(bool producing_images_) { producing_images = producing_images_; };
+   virtual bool GetImageProductionStatus() { return producing_images; }
 
 signals:
    void NewImage();
 
 protected:
-   bool is_streaming = false;
+   bool producing_images = true;
 };
