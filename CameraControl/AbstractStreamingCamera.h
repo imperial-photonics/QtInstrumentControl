@@ -154,5 +154,6 @@ private:
    std::shared_ptr<ImageBuffer> latest_data;
 
    QMutex* m;
+   QMutex* buffer_mutex;
    friend class ImageBuffer;
 };

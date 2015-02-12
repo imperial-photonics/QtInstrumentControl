@@ -21,6 +21,7 @@ AbstractStreamingCamera::AbstractStreamingCamera(QObject* parent) :
       connect(parent, &QObject::destroyed, this, &QObject::deleteLater);
 
    m = new QMutex();
+   buffer_mutex = new QMutex(QMutex::Recursive);
    next_mutex = new QMutex();
    latest_data = shared_ptr<ImageBuffer>(new ImageBuffer());
 
@@ -36,6 +37,7 @@ AbstractStreamingCamera::~AbstractStreamingCamera()
 void AbstractStreamingCamera::FreeBuffers()
 {
    QMutexLocker lk(m);
+   QMutexLocker lkb(buffer_mutex);
    init = false;
    allocation_idx++;
    latest_data = shared_ptr<ImageBuffer>(new ImageBuffer());
@@ -98,6 +100,8 @@ void AbstractStreamingCamera::QueueAllBuffers()
 void AbstractStreamingCamera::QueuePointer(unsigned char* ptr)
 {
    QueuePointerWithCamera(ptr);
+   
+   QMutexLocker lk(buffer_mutex);
    unused_buffers.push_back(ptr);
 }
 
@@ -138,8 +142,11 @@ void AbstractStreamingCamera::AllocateBuffers(int buffer_size_)
       latest_data = shared_ptr<ImageBuffer>( new ImageBuffer() );
       lk.unlock();
 
+      QMutexLocker lkb(buffer_mutex);
+
       FlushBuffers();
       FreeBuffers();
+
 
       // buffer_size should be big enough for float
       AllocateMemory(reinterpret_cast<void**>(&background_ptr), buffer_size);
@@ -164,6 +171,8 @@ void AbstractStreamingCamera::AllocateBuffers(int buffer_size_)
 */
 unsigned char* AbstractStreamingCamera::GetUnusedBuffer()
 {
+   QMutexLocker lk(buffer_mutex);
+
    if (unused_buffers.empty())
       throw std::exception("Streaming Camera Error - Out of buffers");
 
@@ -197,12 +206,12 @@ void AbstractStreamingCamera::SetStreamingStatus(bool streaming_)
       if (is_streaming)
          return;
    
-      main_thread = QThread::currentThread();
-      worker_thread = new QThread(this);
+      //main_thread = QThread::currentThread();
+      worker_thread = new QThread;
       worker_thread->setObjectName("Andor Camera");
       
       connect(worker_thread, &QThread::started, this, &AbstractStreamingCamera::run);
-      connect(this, &AbstractStreamingCamera::StreamingFinished, [=]() { moveToThread(main_thread); });
+      //connect(this, &AbstractStreamingCamera::StreamingFinished, [=]() { moveToThread(main_thread); });
       connect(this, &AbstractStreamingCamera::StreamingFinished, worker_thread, &QThread::quit);
       connect(worker_thread, &QThread::finished, worker_thread, &QThread::deleteLater);
       
