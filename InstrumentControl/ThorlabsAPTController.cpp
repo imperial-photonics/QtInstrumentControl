@@ -304,10 +304,13 @@ void ThorlabsAPTController::SetPosition(double position_)
    if (!connected)
       return;
 
-   if (position_ < min_position)
-      position_ = min_position;
-   if (position_ > max_position)
-      position_ = max_position;
+   if (enforce_limits)
+   {
+      if (position_ < min_position)
+         position_ = min_position;
+      if (position_ > max_position)
+         position_ = max_position;
+   }
 
    std::cout << "Setting position: " << position_ << "\n";
    target_position = position_;
@@ -324,24 +327,53 @@ void ThorlabsAPTController::SetPosition(double position_)
    SendCommandWithData(MGMSG_MOT_MOVE_ABSOLUTE, data);
 }
 
+void ThorlabsAPTController::WaitForMotionComplete()
+{
+   while (in_motion || (abs(cur_position-target_position) > 1)) // second condition just makes sure we wait until we start moving
+   { 
+      QThread::msleep(5); 
+   }
+}
+
 void ThorlabsAPTController::SetMaxPosition(double max_position_)
 {
-   if (cur_position > max_position_)
+   if (max_position_ == max_position)
+      return;
+
+   if (enforce_limits && cur_position > max_position_)
       SetPosition(max_position_);
 
    max_position = max_position_;
-   enforce_limits = true;
+   emit MaxPositionChanged(max_position);
+   //enforce_limits = true;
 
 }
 
 void ThorlabsAPTController::SetMinPosition(double min_position_)
 {
-   if (cur_position < min_position_)
+   if (min_position_ == min_position)
+      return;
+
+   if (enforce_limits && cur_position < min_position_)
       SetPosition(min_position_);
 
    min_position = min_position_;
-   enforce_limits = true;
+   emit MinPositionChanged(min_position);
+   //enforce_limits = true;
 
+}
+
+void ThorlabsAPTController::SetEnforceLimits(bool enforce_limits_)
+{ 
+   enforce_limits = enforce_limits_; 
+
+   if (enforce_limits)
+   {
+      if (cur_position < min_position)
+         SetPosition(min_position);
+      if (cur_position > max_position)
+         SetPosition(max_position);
+   }
 }
 
 void ThorlabsAPTController::SetAllowManualControl(bool allow_manual_control)
@@ -561,9 +593,12 @@ void ThorlabsAPTController::ProcessStatusMessage(QDataStream& ds, bool short_ver
    }
    else
    {
+      double intpart;
+
       ds >> channel >> position >> velocity >> empty >> status;
 
-      cur_position = position / position_factor - position_zero;
+      cur_position = position / position_factor;
+      cur_position = 360.0 * modf(cur_position / 360.0, &intpart);
       cur_velocity = velocity / velocity_factor;
 
       emit PositionChanged(cur_position);

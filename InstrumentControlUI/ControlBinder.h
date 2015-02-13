@@ -101,7 +101,7 @@ public:
 
 #define Bind(widget, ...) BindImpl(#widget, widget, ##__VA_ARGS__)
 #define DirectBind(widget, ...) DirectBindImpl(#widget, widget, ##__VA_ARGS__)
-#define QueuedBind(widget, ...) DirectBindImpl(#widget, widget, ##__VA_ARGS__)
+#define QueuedBind(widget, ...) QueuedBindImpl(#widget, widget, ##__VA_ARGS__)
 
    ControlBinder(QObject* parent, QString object_name)
    {
