@@ -229,7 +229,10 @@ void ThorlabsAPTController::MonitorConnection()
 
          // Make sure device is homed
          if (!homed)
+         {
+            std::cout << "   Homing stage...\n";
             SendCommand(MGMSG_MOT_MOVE_HOME, 1);
+         }
          else
          {
             QThread::msleep(100);
@@ -299,9 +302,14 @@ void ThorlabsAPTController::EnableJogButtons(bool enabled)
    SendCommandWithData(MGMSG_MOT_SET_BUTTONPARAMS, data);
 }
 
+void ThorlabsAPTController::SetToMinimumPosition()
+{
+   SetPosition(min_position);
+}
+
 void ThorlabsAPTController::SetPosition(double position_)
 {
-   if (!connected)
+   if (!connected || !homed)
       return;
 
    if (enforce_limits)
@@ -512,6 +520,7 @@ void ThorlabsAPTController::ResponseReader()
                   // all these messages are followed by status message
                case MGMSG_MOT_MOVE_COMPLETED:
                case MGMSG_MOT_MOVE_STOPPED:
+                  emit MoveFinished();
                case MGMSG_MOT_GET_DCSTATUSUPDATE:
                   ProcessStatusMessage(ds);
                   break;
@@ -555,7 +564,7 @@ void ThorlabsAPTController::ResponseReader()
             switch (response)
             {
             case MGMSG_MOT_MOVE_HOMED:
-               //position_zero = cur_position;
+               std::cout << "   Homing complete.\n";
                homed = true;
                emit Operational();
                break;
@@ -611,16 +620,22 @@ void ThorlabsAPTController::ProcessStatusMessage(QDataStream& ds, bool short_ver
    homed = status & 0x400;
    bool in_motion_ = status & (0x10 | 0x20 | 0x40 | 0x80 | 0x200);
 
-   if (in_motion & !in_motion) // just stopped moving
-      emit MoveFinished(cur_position);
+   if (in_motion & !in_motion_) // just stopped moving
+      emit MoveFinished();
+
+   in_motion = in_motion_;
 
    bool forward_hw_limit = status & 0x1;
    bool rev_hw_limit = status & 0x2;
    bool homing = status & 0x200;
    bool tracking = status & 0x1000;
    bool settled = status & 0x2000;
-   bool motion_error = status & 0x4000;
    bool motor_overcurrent = status & 0x01000000;
+
+   motion_error = status & 0x4000;
+
+   if (motion_error)
+      std::cout << "Thorlabs APT Motion Error!\n";
 
    SendCommand(MGMSG_MOT_ACK_DCSTATUSUPDATE);
 

@@ -21,6 +21,7 @@ public:
    ~ThorlabsAPTController();
 
    void SetPosition(double position);
+   void SetToMinimumPosition();
    double GetPosition() { return cur_position; };
 
    // blocks -> only call this from another thread
@@ -29,7 +30,7 @@ public:
    const QString& GetUnits() { return units; }
 
    bool IsConnected() { return connected; }
-   bool IsOperational() { return connected & homed; }
+   bool IsOperational() { return connected & homed & !motion_error; }
 
    void SetMaxPosition(double max_position);
    double GetMaxPosition() { return max_position; }
@@ -48,7 +49,7 @@ signals:
    void Operational(); // connected and homed
    void Disconnected();
    void PositionChanged(double position);
-   void MoveFinished(double position);
+   void MoveFinished();
    void MaxPositionChanged(double max_position);
    void MinPositionChanged(double min_position);
 
@@ -94,12 +95,13 @@ protected:
    bool connected = false;
    bool homed = false;
    bool in_motion = false;
+   bool motion_error = false;
    bool has_status = false;
    bool watchdog_reset = false;
 
    double min_position = 0;
    double max_position = 360;
-   bool enforce_limits = true;
+   bool enforce_limits = false;
 
    std::recursive_mutex send_mutex;
 
