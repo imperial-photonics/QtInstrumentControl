@@ -28,11 +28,14 @@ typedef ParameterType ControlType; // refactoring
 
 typedef QList<QPair<QString, int>> EnumerationList;
 
-class AbstractStreamingCamera : public QObject, public ImageSource
+class AbstractStreamingCamera : public ImageSource
 {
    Q_OBJECT
 
 public:
+
+   enum TriggerMode { Internal, Software, External };
+
    AbstractStreamingCamera(QObject* parent = 0);
    ~AbstractStreamingCamera();
 
@@ -42,6 +45,9 @@ public:
    virtual int GetStride() = 0;
    virtual double GetPixelSize() = 0;
    virtual cv::Rect GetROI() = 0;
+
+   virtual void SetTriggerMode(TriggerMode trigger_mode) = 0;
+   virtual void SoftwareTrigger() = 0;
 
    virtual void SetParameter(const QString& parameter, ParameterType type, QVariant value) = 0;
    virtual QVariant GetParameter(const QString& parameter, ParameterType type) = 0;
@@ -67,13 +73,13 @@ public:
 
    cv::Mat GetNextImage();
    cv::Mat GetImage();
+   cv::Mat GetImageUnsafe();
    cv::Mat BackgroundImage();
 
    QMutex* control_mutex;
 
 signals:
    void ImageSizeChanged();
-   void NewImage();
    void NewBackground();
    void StreamingStatusChanged(bool is_streaming);
    void StreamingFinished();
@@ -117,7 +123,6 @@ protected:
    int buffer_size;
    int max_buffer_size;
 
-   bool is_streaming;
    bool terminate;
    QThread* main_thread;
    QThread* worker_thread;
@@ -126,6 +131,9 @@ protected:
    QMutex* next_mutex;
 
    bool controls_locked = false;
+   bool is_streaming = false;
+
+   int image_index;
 
 private:
 
@@ -146,5 +154,6 @@ private:
    std::shared_ptr<ImageBuffer> latest_data;
 
    QMutex* m;
+   QMutex* buffer_mutex;
    friend class ImageBuffer;
 };

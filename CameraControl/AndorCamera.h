@@ -15,6 +15,8 @@ public:
    AndorCamera(int idx = 0, QObject* parent = 0);
    ~AndorCamera();
 
+   void Init();
+
    static void GetConnectedCameras(QStringList& camera_list, QVector<int>& camera_idx);
    
    int    GetNumBytesPerPixel();
@@ -27,6 +29,8 @@ public:
 
    void   SetROI(cv::Rect roi);
    void   SetFullROI();
+   void SetTriggerMode(TriggerMode trigger_mode);
+   void SoftwareTrigger();
 
    void SetParameter(const QString& parameter, ParameterType type, QVariant value);
    QVariant GetParameter(const QString& parameter, ParameterType type);

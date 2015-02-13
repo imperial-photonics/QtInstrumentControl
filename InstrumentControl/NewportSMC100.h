@@ -36,6 +36,8 @@ public:
    {
       baud = QSerialPort::Baud57600;
       units = "mm";
+
+      StartThread();
    }
 
 protected:

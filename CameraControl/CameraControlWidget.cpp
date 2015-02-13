@@ -272,8 +272,7 @@ void CameraControlWidget::LimitClicked(Limit limit)
 void CameraControlWidget::WidgetUpdated(QVariant value)
 {
    proposed_value = value;
-   std::cout << "Widget Updated, proposed value: " << value.toString().toStdString() << "\n";
-
+   
    // Don't set value immediately - very annoying if you're tring
    // to type and camera constrains values as you enter them
    // Instead use timer to set value after a short delay
@@ -292,8 +291,7 @@ void CameraControlWidget::SendValueToCamera()
 
    try
    {
-      std::cout << "Sending value to camera: " << proposed_value.toString().toStdString() << "\n";
-
+      std::cout << "Setting parameter: " << control.toStdString() << " = " << proposed_value.toString().toStdString() << "\n";
       camera->SetParameter(control, type, proposed_value);
    }
    catch (std::exception e)

@@ -25,7 +25,6 @@ set(CMAKE_AUTOMOC ON)
 # Source Files
 #====================================
 if (INCLUDE_CAMERA_ANDOR)
-   message("hello")
    set(ANDOR_SOURCE
       AndorCamera.cpp
       AndorCamera.h
@@ -84,5 +83,6 @@ set(CameraControl_INCLUDE_DIR ${Ximea_DIR}
 set(CameraControl_LIBRARIES ${Ximea_LIBRARIES}
                             ${ANDOR_LIBRARIES}
                             ${CameraControl_CUDA_LIBRARIES} 
+                            ${InstrumentControl_LIBRARIES}
                             ${OpenCV_LIBS} 
                             PARENT_SCOPE)

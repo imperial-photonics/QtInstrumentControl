@@ -74,7 +74,7 @@ camera(camera), QWidget(parent)
    //===================================================
    QFormLayout* acq_layout = new QFormLayout();
    
-   AddWidget(acq_layout, XI_PRM_IMAGE_DATA_FORMAT, Enumeration);
+   //AddWidget(acq_layout, XI_PRM_IMAGE_DATA_FORMAT, Enumeration);
    AddWidget(acq_layout, XI_PRM_EXPOSURE, Integer, " us", true); // use timer -> auto exposure is possible
    AddWidget(acq_layout, XI_PRM_GAIN, Float, " dB", true); // use timer -> auto gain is possible
    AddWidget(acq_layout, XI_PRM_DOWNSAMPLING, Integer);
@@ -82,6 +82,10 @@ camera(camera), QWidget(parent)
    AddWidget(acq_layout, XI_PRM_TRG_SOURCE, Enumeration);
    AddWidget(acq_layout, XI_PRM_TRG_SELECTOR, Enumeration);
    AddWidget(acq_layout, XI_PRM_ACQ_TIMING_MODE, Enumeration);
+   //AddWidget(acq_layout, XI_PRM_SENSOR_DATA_BIT_DEPTH, Integer);
+   //AddWidget(acq_layout, XI_PRM_OUTPUT_DATA_BIT_DEPTH, Integer);
+   //AddWidget(acq_layout, XI_PRM_OUTPUT_DATA_PACKING, Integer);
+
 
    QGroupBox* acq_group = new QGroupBox("Acquisition");
    acq_group->setLayout(acq_layout);

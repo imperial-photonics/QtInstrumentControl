@@ -33,7 +33,7 @@ AndorCamera::AndorCamera(int idx, QObject* parent) :
 
    if (!andor_lib_init__)
    {
-      CHECK(AT_InitialiseLibrary()); 
+      CHECK(AT_InitialiseLibrary());
       andor_lib_init__ = true;
    }
 
@@ -41,6 +41,11 @@ AndorCamera::AndorCamera(int idx, QObject* parent) :
    CHECK(AT_Open(idx, &Hndl));
    n_andor_cameras_connected__++;
 
+   StartThread();
+}
+
+void AndorCamera::Init()
+{
    // Allocate buffers big enough for largest possible image
    //===========================================================
    int64_t max_width, max_height;
@@ -455,6 +460,21 @@ void AndorCamera::SetROI(cv::Rect roi)
    CHECK(AT_GetIntMin(Hndl, L"AOITop", &p));
    roi.y = max((int)p, roi.y + 1); // Andor is 1 indexed
    SOFTCHECK(AT_SetInt(Hndl, L"AOITop", roi.y));
+}
+
+void AndorCamera::SetTriggerMode(TriggerMode trigger_mode)
+{
+   if (trigger_mode == Internal)
+      AT_SetEnumeratedString(Hndl, L"TriggerMode", L"Internal");
+   else if (trigger_mode == Software)
+      AT_SetEnumeratedString(Hndl, L"TriggerMode", L"Software");
+   else
+      AT_SetEnumeratedString(Hndl, L"TriggerMode", L"External");
+}
+
+void AndorCamera::SoftwareTrigger()
+{
+   AT_Command(Hndl, L"SoftwareTrigger");
 }
 
 void AndorCamera::SetFullROI()

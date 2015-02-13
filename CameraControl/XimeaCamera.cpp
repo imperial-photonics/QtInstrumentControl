@@ -34,14 +34,20 @@ QStringList XimeaCamera::GetConnectedCameras()
 
 
 XimeaCamera::XimeaCamera(int camera_idx, QObject* parent) :
-   AbstractStreamingCamera(parent)
+AbstractStreamingCamera(parent)
 {
-
    // Don't try and determine bandwidth
    xiSetParamInt(0, XI_PRM_AUTO_BANDWIDTH_CALCULATION, XI_OFF);
 
    // Retrieving a handle to the camera device 
    Check(xiOpenDevice(0, &xiH));
+
+   StartThread();
+}
+
+
+void XimeaCamera::Init()
+{
 
    // Setting "exposure" parameter (1ms)
    //Check(xiSetParam(xiH, XI_PRM_EXPOSURE, &integration_time_us, sizeof(integration_time_us), xiTypeInteger));
@@ -56,9 +62,9 @@ XimeaCamera::XimeaCamera(int camera_idx, QObject* parent) :
 
    int max_n_bytes = max_width * max_height * 4; // worst case 4 bytes
 
-   Check(xiSetParamInt(xiH, XI_PRM_BUFFERS_QUEUE_SIZE, n_buffer));
+   Check(xiSetParamInt(xiH, XI_PRM_BUFFERS_QUEUE_SIZE, 10));
    Check(xiSetParamInt(xiH, XI_PRM_ACQ_BUFFER_SIZE, max_n_bytes * n_buffer));
-   Check(xiSetParamInt(xiH, XI_PRM_BUFFER_POLICY, XI_BP_UNSAFE)); // we're going to provide our own CUDA buffers
+   Check(xiSetParamInt(xiH, XI_PRM_BUFFER_POLICY, XI_BP_SAFE)); // we're going to provide our own CUDA buffers
 
    AllocateBuffers(max_n_bytes);
 
@@ -68,6 +74,21 @@ XimeaCamera::XimeaCamera(int camera_idx, QObject* parent) :
 QWidget* XimeaCamera::GetControlWidget(QWidget* parent)
 {
    return new XimeaControlDisplay(this, parent);
+}
+
+void XimeaCamera::SetTriggerMode(TriggerMode trigger_mode)
+{
+   if (trigger_mode == Internal)
+      SetParameter(XI_PRM_TRG_SOURCE, Integer, XI_TRG_OFF);
+   if (trigger_mode == Software)
+      SetParameter(XI_PRM_TRG_SOURCE, Integer, XI_TRG_SOFTWARE);
+   else
+      SetParameter(XI_PRM_TRG_SOURCE, Integer, XI_TRG_EDGE_RISING);
+}
+
+void XimeaCamera::SoftwareTrigger()
+{
+   xiSetParamInt(xiH, XI_PRM_TRG_SOFTWARE, 0);
 }
 
 void XimeaCamera::SetParameter(const QString& parameter, ParameterType type, QVariant value)
@@ -204,6 +225,7 @@ EnumerationList XimeaCamera::GetEnumerationList(const QString& parameter)
       Add("RGB 24", XI_RGB24);
       Add("RGB Planar", XI_RGB_PLANAR);
       Add("Packed", XI_FRM_TRANSPORT_DATA);
+      Add("Dummy", 100);
    }
 
    return list;
@@ -311,8 +333,8 @@ void XimeaCamera::run()
 
    while (!terminate)
    {
-      //img.bp_size = max_buffer_size;
-      //img.bp = GetUnusedBuffer();
+      img.bp_size = max_buffer_size;
+      img.bp = GetUnusedBuffer();
 
       errorValue = xiGetImage(xiH, 5000, &img);
       
@@ -321,10 +343,7 @@ void XimeaCamera::run()
 
       if (errorValue == XI_OK)
       {
-         auto buf = GetUnusedBuffer();
-         memcpy(buf, img.bp, img.width * img.height * bytes_per_pixel );
-
-         cv::Mat image(image_size, image_type, buf);
+         cv::Mat image(image_size, image_type, img.bp);
          SetLatest(image);
       }
       /*

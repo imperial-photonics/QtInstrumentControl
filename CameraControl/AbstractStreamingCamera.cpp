@@ -13,12 +13,15 @@ using std::shared_ptr;
 
 
 AbstractStreamingCamera::AbstractStreamingCamera(QObject* parent) :
-   init(false), allocation_idx(0),
-   is_streaming(false), terminate(false)
+   init(false), 
+   allocation_idx(0),
+   terminate(false)
 {
-   connect(parent, &QObject::destroyed, this, &QObject::deleteLater);
+   if (parent != nullptr)
+      connect(parent, &QObject::destroyed, this, &QObject::deleteLater);
 
    m = new QMutex();
+   buffer_mutex = new QMutex(QMutex::Recursive);
    next_mutex = new QMutex();
    latest_data = shared_ptr<ImageBuffer>(new ImageBuffer());
 
@@ -34,6 +37,7 @@ AbstractStreamingCamera::~AbstractStreamingCamera()
 void AbstractStreamingCamera::FreeBuffers()
 {
    QMutexLocker lk(m);
+   QMutexLocker lkb(buffer_mutex);
    init = false;
    allocation_idx++;
    latest_data = shared_ptr<ImageBuffer>(new ImageBuffer());
@@ -64,6 +68,15 @@ cv::Mat AbstractStreamingCamera::GetImage()
    return buf->GetBackgroundSubtractedImage().clone();
 }
 
+
+cv::Mat AbstractStreamingCamera::GetImageUnsafe()
+{
+   // Return a copy of the image so we can safely process
+   shared_ptr<ImageBuffer> buf = GetLatest();
+   return buf->GetImage();
+}
+
+
 cv::Mat AbstractStreamingCamera::GetNextImage()
 {
    // Return a copy of the image so we can safely process
@@ -80,12 +93,22 @@ void AbstractStreamingCamera::QueueAllBuffers()
       QueuePointer(buffer);
 }
 
+/*
+   Call to return a used buffer to the queue.
+   Generally called from ImageBuffer
+*/
 void AbstractStreamingCamera::QueuePointer(unsigned char* ptr)
 {
+   QueuePointerWithCamera(ptr);
+   
+   QMutexLocker lk(buffer_mutex);
    unused_buffers.push_back(ptr);
 }
 
-
+/*
+   Wrapper for memory allocation, use cuda pinned memory if possible,
+   otherwise just malloc
+*/
 void AbstractStreamingCamera::AllocateMemory(void** ptr, int size)
 {
 #ifdef USE_CUDA
@@ -95,6 +118,9 @@ void AbstractStreamingCamera::AllocateMemory(void** ptr, int size)
 #endif
 }
 
+/*
+   Wrapper for memory free
+*/
 void AbstractStreamingCamera::FreeMemory(void* ptr)
 {
 #ifdef USE_CUDA
@@ -116,8 +142,11 @@ void AbstractStreamingCamera::AllocateBuffers(int buffer_size_)
       latest_data = shared_ptr<ImageBuffer>( new ImageBuffer() );
       lk.unlock();
 
+      QMutexLocker lkb(buffer_mutex);
+
       FlushBuffers();
       FreeBuffers();
+
 
       // buffer_size should be big enough for float
       AllocateMemory(reinterpret_cast<void**>(&background_ptr), buffer_size);
@@ -137,8 +166,13 @@ void AbstractStreamingCamera::AllocateBuffers(int buffer_size_)
    init = true;
 }
 
+/*
+   Call this function to get a new buffer to store an image during streaming
+*/
 unsigned char* AbstractStreamingCamera::GetUnusedBuffer()
 {
+   QMutexLocker lk(buffer_mutex);
+
    if (unused_buffers.empty())
       throw std::exception("Streaming Camera Error - Out of buffers");
 
@@ -148,16 +182,23 @@ unsigned char* AbstractStreamingCamera::GetUnusedBuffer()
    return buf;
 }
    
+/*
+   Call this function from the streaming thread with new image data
+*/
 void AbstractStreamingCamera::SetLatest(cv::Mat& image)
 {
    QMutexLocker lk(m);
-   latest_data = shared_ptr<ImageBuffer>( new Buf(image, background, this) );
+   latest_data = shared_ptr<ImageBuffer>( new ImageBuffer(image, background, this, image_index++) );
    lk.unlock();
 
    emit NewImage();
    next_cv.wakeAll();
 }
 
+/*
+   Turn streaming on or off
+   Call this function directly from the main thread
+*/
 void AbstractStreamingCamera::SetStreamingStatus(bool streaming_)
 {
    if (streaming_)
@@ -165,31 +206,33 @@ void AbstractStreamingCamera::SetStreamingStatus(bool streaming_)
       if (is_streaming)
          return;
    
-      main_thread = QThread::currentThread();
-      worker_thread = new QThread(this);
+      //main_thread = QThread::currentThread();
+      worker_thread = new QThread;
       worker_thread->setObjectName("Andor Camera");
-      this->moveToThread(worker_thread);
- 
+      
       connect(worker_thread, &QThread::started, this, &AbstractStreamingCamera::run);
-      connect(this, &AbstractStreamingCamera::StreamingFinished, [=]() { moveToThread(main_thread); });
+      //connect(this, &AbstractStreamingCamera::StreamingFinished, [=]() { moveToThread(main_thread); });
       connect(this, &AbstractStreamingCamera::StreamingFinished, worker_thread, &QThread::quit);
       connect(worker_thread, &QThread::finished, worker_thread, &QThread::deleteLater);
       
       terminate = false;
       is_streaming = true;
+      image_index = 0;
 
       worker_thread->start();
-
-//      QThread::sleep(1); 
    }
    else
    {
-      // Try and tell the thread to quit
+      // Try and tell the thread to quit and wait until it does
       terminate = true;
-
+      while (is_streaming) {};
    }
 }
 
+/*
+   Call this function just before the streaming thread finishes
+   to clean up the buffers and notify listeners
+*/
 void AbstractStreamingCamera::TerminateStreaming()
 {
    if (is_streaming)
@@ -204,13 +247,18 @@ void AbstractStreamingCamera::TerminateStreaming()
    }
 }
 
-
+/*
+   Discard the stored background
+*/
 void AbstractStreamingCamera::ClearBackground()
 {
    background = cv::Mat();
    emit NewBackground();
 }
 
+/*
+   Collect a new background by averaging a number of frames
+*/
 void AbstractStreamingCamera::UpdateBackground()
 {
    cv::Size image_size = GetImageSize();
