@@ -11,25 +11,36 @@
 
 class ThorlabsAPTController : public ThreadedObject
 {
+   Q_OBJECT
+
    enum MotorType { DCMotor, StepperMotor };
 
-   Q_OBJECT
 public:
 
    ThorlabsAPTController(const QString& controller_type, const QString& stage_type, QObject* parent = 0);
    ~ThorlabsAPTController();
 
    void SetPosition(double position);
+   void SetToMinimumPosition();
    double GetPosition() { return cur_position; };
+
+   // blocks -> only call this from another thread
+   void WaitForMotionComplete();
 
    const QString& GetUnits() { return units; }
 
    bool IsConnected() { return connected; }
-   bool IsOperational() { return connected & homed; }
+   bool IsOperational() { return connected & homed & !motion_error; }
 
    void SetMaxPosition(double max_position);
+   double GetMaxPosition() { return max_position; }
+
    void SetMinPosition(double max_position);
+   double GetMinPosition() { return min_position; }
+
    void SetAllowManualControl(bool allow_manual_control);
+   void SetEnforceLimits(bool enforce_limits_);
+
 
    void Init();
 
@@ -38,7 +49,9 @@ signals:
    void Operational(); // connected and homed
    void Disconnected();
    void PositionChanged(double position);
-   void MoveFinished(double position);
+   void MoveFinished();
+   void MaxPositionChanged(double max_position);
+   void MinPositionChanged(double min_position);
 
 protected:
 
@@ -69,7 +82,6 @@ protected:
    double position_factor;
    double velocity_factor;
    double acceleration_factor;
-   double position_zero = 0;
    MotorType motor_type;
    QString units;
    QString controller_type;
@@ -83,12 +95,13 @@ protected:
    bool connected = false;
    bool homed = false;
    bool in_motion = false;
+   bool motion_error = false;
    bool has_status = false;
    bool watchdog_reset = false;
 
    double min_position = 0;
    double max_position = 360;
-   bool enforce_limits = true;
+   bool enforce_limits = false;
 
    std::recursive_mutex send_mutex;
 
