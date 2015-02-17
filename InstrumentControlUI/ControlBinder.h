@@ -82,7 +82,7 @@ struct BoundControl<QComboBox, V, U, T>
 {
 public:
    template<class V, class U, class T>
-   BoundControl(ControlBinder* binder, QString name, QComboBox* widget, V* obj, void(U::*setter)(T), T(U::*getter)(void), void (U::*signal)(T) = nullptr)
+   BoundControl(ControlBinder* binder, QString name, QComboBox* widget, V* obj, void(U::*setter)(T), T(U::*getter)(void), void (U::*signal)(T) = nullptr, Qt::ConnectionType connection_type = Qt::AutoConnection)
    {
       auto widget_signal = static_cast<void (QComboBox::*)(int)>(&QComboBox::currentIndexChanged);
       auto widget_setter = static_cast<void (QComboBox::*)(int)>(&QComboBox::setCurrentIndex);
