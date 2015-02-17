@@ -55,6 +55,8 @@ signals:
 
 protected:
 
+   void ConnectToRotationStage();
+
    void ConnectToDevice(int dev_index);
    void MonitorConnection();
    
@@ -70,6 +72,7 @@ protected:
    void ProcessHardwareInformationMessage(QDataStream& data);
    void ProcessStatusMessage(QDataStream& data, bool short_version = false);
    void ProcessVelocityParamsMessage(QDataStream& data);
+   void ProcessHomeParamsMessage(QDataStream& data);
    
    QTimer* connection_timer;
    void* device = nullptr;
