@@ -310,9 +310,32 @@ void XimeaCamera::SetROI(cv::Rect roi)
 
 std::shared_ptr<ImageBuffer> XimeaCamera::GrabImage()
 {
-   // TODO
 
-   return std::shared_ptr<ImageBuffer>(nullptr);
+   if (is_streaming)
+      return GetNext();
+
+   XI_RETURN errorValue;
+   XI_IMG img;
+
+   cv::Size image_size = GetImageSize();
+   int bytes_per_pixel = GetNumBytesPerPixel();
+   int image_type = CV_8U; // todo
+
+   img.size = sizeof(XI_IMG);
+
+   Check(xiStartAcquisition(xiH));
+
+   img.bp_size = image_size.area() * bytes_per_pixel;
+   img.bp = GetUnusedBuffer();
+
+   errorValue = xiGetImage(xiH, 5000, &img);
+
+   cv::Mat image(image_size, image_type, img.bp);
+   SetLatest(image);
+ 
+   Check(xiStopAcquisition(xiH));
+
+   return GetLatest();
 }
 
 void XimeaCamera::run()
@@ -326,6 +349,10 @@ void XimeaCamera::run()
 
    img.size = sizeof(XI_IMG);
 
+   Check(xiSetParamInt(xiH, XI_PRM_BUFFERS_QUEUE_SIZE, 10));
+   Check(xiSetParamInt(xiH, XI_PRM_BUFFER_POLICY, XI_BP_SAFE)); // we're going to provide our own CUDA buffers
+
+
    Check(xiStartAcquisition(xiH));
       
 //   emit ControlLockUpdated(true);
@@ -333,12 +360,12 @@ void XimeaCamera::run()
 
    while (!terminate)
    {
-      img.bp_size = max_buffer_size;
+      img.bp_size = image_size.area() * bytes_per_pixel;
       img.bp = GetUnusedBuffer();
 
       errorValue = xiGetImage(xiH, 5000, &img);
       
-         if (terminate)
+      if (terminate)
          break;
 
       if (errorValue == XI_OK)

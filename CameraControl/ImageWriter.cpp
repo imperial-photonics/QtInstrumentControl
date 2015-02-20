@@ -40,7 +40,7 @@ void ImageWriter::SetFolder(const QString& folder_)
 
 void ImageWriter::SetBufferSize(int buffer_size_)
 {
-   if (!active && buffer_size > 0)
+   if (!active && buffer_size_ > 0)
    {
       buffer_size = buffer_size_;
       InitBuffer();

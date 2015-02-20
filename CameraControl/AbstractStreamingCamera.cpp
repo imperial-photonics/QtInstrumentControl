@@ -55,7 +55,7 @@ shared_ptr<ImageBuffer> AbstractStreamingCamera::GetLatest()
 shared_ptr<ImageBuffer> AbstractStreamingCamera::GetNext()
 {
    QMutexLocker next_lk(next_mutex);
-   next_cv.wait(next_mutex);
+   next_cv.wait(next_mutex, 10000);
 
    QMutexLocker lk(m);
    return latest_data;
@@ -263,8 +263,11 @@ void AbstractStreamingCamera::UpdateBackground()
 {
    cv::Size image_size = GetImageSize();
    cv::Mat new_background(image_size, CV_32F, background_ptr);
+   /*
    
    int n = 5;
+
+   int type;
 
    cv::Mat f;
    for (int i=0; i<n; i++)
@@ -272,10 +275,16 @@ void AbstractStreamingCamera::UpdateBackground()
       shared_ptr<ImageBuffer> buf = GrabImage();
       buf->GetImage().convertTo(f, CV_32F);
       new_background += f;
+
+      type = buf->GetImage().type();
    }
 
    new_background /= n;
-   new_background.convertTo(background, CV_16U);
+   new_background.convertTo(background, type);
+   */
+
+   shared_ptr<ImageBuffer> buf = GrabImage();
+   buf->GetImage().copyTo(background);
 
    emit NewBackground();
 }
