@@ -142,15 +142,6 @@ void ThorlabsAPTController::ConnectToDevice(int dev_index)
 {
    if (device != nullptr)
    {
-      /*
-      try
-      {
-         SendCommand(MGMSG_MOT_SUSPEND_ENDOFMOVEMSGS, 1);
-         SendCommand(MGMSG_HW_STOP_UPDATEMSGS);
-      } catch (std::exception e)
-      { }
-      */
-
       FT_Close(device);
       device = nullptr;
    }
@@ -194,15 +185,60 @@ void ThorlabsAPTController::ConnectToDevice(int dev_index)
    connected = true;
 }
 
+void ThorlabsAPTController::ConnectToRotationStage()
+{
+   ConnectToDevice(0);
+
+   reader_thread = std::thread(&ThorlabsAPTController::ResponseReader, this);
+   QThread::msleep(100);
+
+   SendCommand(MGMSG_HW_REQ_INFO); // Request hardware info
+   SendCommand(MGMSG_MOD_SET_CHANENABLESTATE, 1, 1); // Enable motor on channel 1
+   SendCommand(MGMSG_MOT_RESUME_ENDOFMOVEMSGS, 1, 0); // Make sure we get responses
+   SendCommand(MGMSG_HW_START_UPDATEMSGS, 20); // Update messages 20Hz update rate
+   SendCommand(MGMSG_MOT_REQ_DCSTATUSUPDATE, 1);
+   SendCommand(MGMSG_MOT_REQ_VELPARAMS, 1);
+
+   QByteArray data;
+   QDataStream ds(&data, QIODevice::WriteOnly);
+   quint16 ch = 1;
+   quint16 home_dir = 2;
+   quint16 lim_switch = 1;
+   quint32 home_velocity = 1636106240 / 8;
+   quint32 offset = 0;
+   ds << ch << home_dir << lim_switch << home_velocity << offset;
+   SendCommandWithData(MGMSG_MOT_SET_HOMEPARAMS, data);
+
+   SendCommand(MGMSG_MOT_REQ_HOMEPARAMS, 1);
+
+
+   bool a = WaitForStatusUpdate(1000);
+
+   // Make sure device is homed
+   if (!homed)
+   {
+      std::cout << "   Homing stage...\n";
+      SendCommand(MGMSG_MOT_MOVE_HOME, 1);
+   }
+   else
+   {
+      QThread::msleep(100);
+      emit Operational();
+   }
+
+   // Setup timer to monitor connection
+   connection_timer->start(1000);
+}
+
 void ThorlabsAPTController::MonitorConnection()
 {
    if (connected && watchdog_reset)
    {
       watchdog_reset = false;
+      connection_timer->start(200);
    }
    else
    {
-
       cout << "Not connected... attempting to connect to APT controller\n";
 
       connected = false;
@@ -214,40 +250,18 @@ void ThorlabsAPTController::MonitorConnection()
 
       try
       {
-         ConnectToDevice(0);
-
-         reader_thread = std::thread(&ThorlabsAPTController::ResponseReader, this);
-         QThread::msleep(100);
-
-         SendCommand(MGMSG_HW_REQ_INFO); // Request hardware info
-         SendCommand(MGMSG_MOD_SET_CHANENABLESTATE, 1, 1); // Enable motor on channel 1
-         SendCommand(MGMSG_MOT_RESUME_ENDOFMOVEMSGS, 1, 0); // Make sure we get responses
-         SendCommand(MGMSG_HW_START_UPDATEMSGS, 2); // Update messages 2Hz update rate
-         SendCommand(MGMSG_MOT_REQ_DCSTATUSUPDATE, 1);
-        
-         bool a = WaitForStatusUpdate(1000);
-
-         // Make sure device is homed
-         if (!homed)
-         {
-            std::cout << "   Homing stage...\n";
-            SendCommand(MGMSG_MOT_MOVE_HOME, 1);
-         }
-         else
-         {
-            QThread::msleep(100);
-            emit Operational();
-         }
-
+         ConnectToRotationStage();
       }
       catch (std::exception e)
       {
          std::cout << "Could not connect to Thorlabs APT controller : \n  ";
          std::cout << e.what() << "\n\n";
+
+         // Setup timer to try another connection
+         connection_timer->start(1000);
       }
+
    }
-   // Setup timer to monitor connection
-   connection_timer->start(5000);
 }
 
 bool ThorlabsAPTController::WaitForStatusUpdate(int timeout_ms)
@@ -542,13 +556,16 @@ void ThorlabsAPTController::ResponseReader()
 
                   break;
 
-                  // The following messages are currently ignored
+               case MGMSG_MOT_GET_HOMEPARAMS:
+                  ProcessHomeParamsMessage(ds);
+                  break;
+                     
+                     // The following messages are currently ignored
                case MGMSG_HUB_GET_BAYUSED:
                case MGMSG_MOT_GET_JOGPARAMS:
                case MGMSG_MOT_GET_GENMOVEPARAMS:
                case MGMSG_MOT_GET_MOVERELPARAMS:
                case MGMSG_MOT_GET_MOVEABSPARAMS:
-               case MGMSG_MOT_GET_HOMEPARAMS:
                case MGMSG_MOT_GET_LIMSWITCHPARAMS:
                case MGMSG_MOT_GET_DCPIDPARAMS:
                case MGMSG_MOT_GET_AVMODES:
@@ -684,4 +701,15 @@ void ThorlabsAPTController::ProcessVelocityParamsMessage(QDataStream& ds)
 
    acceleration = acceleration_ / acceleration_factor;
    max_velocity = max_velocity_ / velocity_factor;
+}
+
+void ThorlabsAPTController::ProcessHomeParamsMessage(QDataStream& ds)
+{
+   quint16 ch = 1;
+   quint16 home_dir = 0;
+   quint16 lim_switch = 0;
+   qint32 home_velocity = 1636106240;
+   quint32 offset = 0;
+
+   ds >> ch >> home_dir >> lim_switch >> home_velocity >> offset;
 }
