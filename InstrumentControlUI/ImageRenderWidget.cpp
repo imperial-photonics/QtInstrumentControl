@@ -300,10 +300,14 @@ void ImageRenderWidget::paintEvent(QPaintEvent *event)
    if (selected_pos.x() < image_size.width &&
       selected_pos.x() >= 0 &&
       selected_pos.y() < image_size.height &&
-      selected_pos.y() >= 0 &&
-      cv_image[cur_index].type() == CV_16U)
+      selected_pos.y() >= 0)
    {
-      v = im.at<uint16_t>(selected_pos.y(), selected_pos.x());
+      if (cv_image[cur_index].type() == CV_16U)
+         v = im.at<uint16_t>(selected_pos.y(), selected_pos.x());
+      else if (cv_image[cur_index].type() == CV_8U)
+         v = im.at<uint8_t>(selected_pos.y(), selected_pos.x());
+      else if (cv_image[cur_index].type() == CV_32F)
+         v = im.at<float>(selected_pos.y(), selected_pos.x());
    }
 
    double meanv = 0;
