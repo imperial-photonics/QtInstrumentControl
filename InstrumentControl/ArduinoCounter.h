@@ -84,6 +84,7 @@ public:
    int GetNumFlybackSteps() { return n_flyback_steps; }
    bool GetUseDiagnosticCounts() { return use_diagnostic_counts; }
 
+   int GetCurrentCount() { return current_count; }
 
    void StartLine();
    void PrimeLine();
@@ -129,8 +130,8 @@ private:
    int galvo_offset = 0;
    int n_flyback_steps = 0;
 
-   //bool connected;
    int idx = 0;
+   int current_count = 0;
 
    QTimer* monitor_timer;
 

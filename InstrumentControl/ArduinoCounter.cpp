@@ -270,7 +270,11 @@ QByteArray ArduinoCounter::WaitForMessage(char msg, int timeout_ms)
    return QByteArray();
 }
 
-
+/*
+   Reader function to monitor communications from Arduino.
+   Builds up packets until they're complete and then dispatches
+   them to ProcessMessage(...)
+*/
 void ArduinoCounter::ReadData()
 {
    QMutexLocker lk(&connection_mutex);
@@ -290,6 +294,9 @@ void ArduinoCounter::ReadData()
    }
 }
 
+/*
+   Interpet a message packet from Arduino
+*/
 QByteArray ArduinoCounter::ProcessMessage(QByteArray data)
 {
    unsigned char msg = data[0] & 0x7F;
@@ -318,17 +325,19 @@ QByteArray ArduinoCounter::ProcessMessage(QByteArray data)
       case MSG_PIXEL_DATA:
       {
          emit CountUpdated(param);
+         current_count = param;
       } break;
       case MSG_LINE_DATA:
       {
          int n_px = payload.size() / 2;
          uint16_t* d = reinterpret_cast<uint16_t*>(payload.data());
          cv::Mat line(1, n_px, CV_16U, payload.data());
-
+         std::cout << "New line\n";
          emit NewLine(line);
       } break;
       case MSG_LINE_FINISHED:
       {
+         std::cout << "Line finished\n";
          emit LineFinished();
       } break;
       case MSG_INFO:
