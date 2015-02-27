@@ -168,6 +168,12 @@ void ArduinoCounter::SetUseDiagnosticCounts(bool use_diagnostic_counts_)
    SendMessage(MSG_USE_DIAGNOSTIC_COUNTS, (int)use_diagnostic_counts);
 }
 
+void ArduinoCounter::SetTriggerDelay(double trigger_delay_us_)
+{
+   trigger_delay_us = trigger_delay_us_;
+   SendMessage(MSG_SET_TRIGGER_DELAY, (float)trigger_delay_us);
+}
+
 void ArduinoCounter::StartLine()
 {
    SendMessage(MSG_START_LINE);
