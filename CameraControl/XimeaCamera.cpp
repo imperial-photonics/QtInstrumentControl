@@ -248,13 +248,18 @@ cv::Size XimeaCamera::GetImageSize()
    Check(xiGetParamInt(xiH, XI_PRM_HEIGHT, &image_height));
 
    //image_size = cv::Size(image_width, image_height);
-   return cv::Size(image_width, image_height);
+   //return cv::Size(image_width, image_height);
+   return cv::Size(1024, 1024);
 }
 
 
 int XimeaCamera::GetImageSizeBytes()
 {
-   return GetImageSize().area() * GetNumBytesPerPixel();
+   int image_width, image_height;
+   Check(xiGetParamInt(xiH, XI_PRM_WIDTH, &image_width));
+   Check(xiGetParamInt(xiH, XI_PRM_HEIGHT, &image_height));
+
+   return image_width * image_height * GetNumBytesPerPixel();
 }
 
 int XimeaCamera::GetStride()
@@ -325,13 +330,16 @@ std::shared_ptr<ImageBuffer> XimeaCamera::GrabImage()
 
    Check(xiStartAcquisition(xiH));
 
-   img.bp_size = image_size.area() * bytes_per_pixel;
+   img.bp_size = GetImageSizeBytes();
    img.bp = GetUnusedBuffer();
 
    errorValue = xiGetImage(xiH, 5000, &img);
 
    cv::Mat image(image_size, image_type, img.bp);
-   SetLatest(image);
+   cv::Rect r(0, 0, 1024, 1024);
+   cv::Mat im2 = image(r);
+
+   SetLatest(im2);
  
    Check(xiStopAcquisition(xiH));
 
@@ -345,8 +353,9 @@ void XimeaCamera::run()
 
    cv::Size image_size = GetImageSize();
    int bytes_per_pixel = GetNumBytesPerPixel();
+   int image_size_bytes = GetImageSizeBytes();
    int image_type = CV_8U; // todo
-
+   int stride = GetStride();
    img.size = sizeof(XI_IMG);
 
    Check(xiSetParamInt(xiH, XI_PRM_BUFFERS_QUEUE_SIZE, 10));
@@ -360,7 +369,7 @@ void XimeaCamera::run()
 
    while (!terminate)
    {
-      img.bp_size = image_size.area() * bytes_per_pixel;
+      img.bp_size = image_size_bytes;
       img.bp = GetUnusedBuffer();
 
       errorValue = xiGetImage(xiH, 5000, &img);
@@ -370,8 +379,10 @@ void XimeaCamera::run()
 
       if (errorValue == XI_OK)
       {
-         cv::Mat image(image_size, image_type, img.bp);
-         SetLatest(image);
+         cv::Mat image(image_size, image_type, img.bp, stride);
+         cv::Rect r(0, 0, 1024, 1024);
+         cv::Mat im2 = image(r);
+         SetLatest(im2);
       }
       /*
       else if (errorValue == 13)

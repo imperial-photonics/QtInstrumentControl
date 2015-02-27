@@ -41,6 +41,8 @@ signals:
    void BufferSizeChanged(int buffer_size);
    void ActiveStateChanged(bool active);
    void ProgressUpdated(int progress);
+   void EnabledStateChanged(bool enabled);
+
 private:
 
    void WriteBuffer();

@@ -332,12 +332,12 @@ QByteArray ArduinoCounter::ProcessMessage(QByteArray data)
          int n_px = payload.size() / 2;
          uint16_t* d = reinterpret_cast<uint16_t*>(payload.data());
          cv::Mat line(1, n_px, CV_16U, payload.data());
-         std::cout << "New line\n";
+         //std::cout << "New line\n";
          emit NewLine(line);
       } break;
       case MSG_LINE_FINISHED:
       {
-         std::cout << "Line finished\n";
+         //std::cout << "Line finished\n";
          emit LineFinished();
       } break;
       case MSG_INFO:

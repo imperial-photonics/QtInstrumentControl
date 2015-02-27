@@ -126,11 +126,13 @@ void ImageWriter::ImageUpdated()
 
 void ImageWriter::WriteBuffer()
 {
-
+   emit EnabledStateChanged(false);
    for (int i = 0; i < file_idx; i++)
    {
       std::stringstream filename;
       filename << complete_file_root << std::setw(5) << std::setfill('0') << i << ".tif";
       cv::imwrite(filename.str(), buffer[i]);
    }
+   emit ProgressUpdated(0);
+   emit EnabledStateChanged(true);
 }

@@ -225,7 +225,7 @@ void AbstractStreamingCamera::SetStreamingStatus(bool streaming_)
    {
       // Try and tell the thread to quit and wait until it does
       terminate = true;
-      while (is_streaming) {};
+      //while (is_streaming) {};
    }
 }
 
