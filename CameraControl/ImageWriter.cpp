@@ -97,6 +97,12 @@ void ImageWriter::SaveSingle()
       return;
 
    cv::Mat m = camera->GetImage();
+
+   // discard unused alpha channel
+   if (m.type() == CV_8UC4)
+      cv::cvtColor(m, m, CV_BGRA2BGR);
+
+
    cv::imwrite(filename.toStdString(), m);
 }
 
@@ -131,6 +137,11 @@ void ImageWriter::WriteBuffer()
    {
       std::stringstream filename;
       filename << complete_file_root << std::setw(5) << std::setfill('0') << i << ".tif";
+
+      // discard unused alpha channel
+      if (buffer[i].type() == CV_8UC4)
+         cv::cvtColor(buffer[i], buffer[i], CV_BGRA2BGR);
+
       cv::imwrite(filename.str(), buffer[i]);
    }
    emit ProgressUpdated(0);
