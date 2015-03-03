@@ -384,14 +384,14 @@ void XimeaCamera::run()
          cv::Mat im2 = image(r);
          SetLatest(im2);
       }
-      /*
-      else if (errorValue == 13)
+      
+      else if (errorValue == 10)
       {
-         CHECK(AT_Command(Hndl, L"AcquisitionStop"));
-         CHECK(AT_Command(Hndl, L"AcquisitionStart"));
-         cout << "Restarting Acquisition\n";
+         //Check(xiStopAcquisition(xiH));
+         //Check(xiStartAcquisition(xiH));
+         //std::cout << "Restarting Acquisition\n";
       }
-      */
+      
       else
       {
          std::cout << "Ximea error code: " << errorValue << "\n";
