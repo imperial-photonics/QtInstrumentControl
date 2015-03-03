@@ -22,6 +22,7 @@
 #define MSG_SET_NUM_FLYBACK_STEPS 0x0B
 #define MSG_USE_DIAGNOSTIC_COUNTS 0x0C
 #define MSG_SET_TRIGGER_DELAY 0x0D
+#define MSG_SET_TRIGGER_DURATION 0x0E
 
 // Triggering commands
 #define MSG_TRIGGER 0x10
@@ -73,6 +74,7 @@ public:
    void SetNumFlybackSteps(int num_flyback_steps);
    void SetUseDiagnosticCounts(bool use_diagnostic_counts);
    void SetTriggerDelay(double trigger_delay_us);
+   void SetTriggerDuration(double trigger_duration_us);
 
    bool GetStreaming() { return streaming; }
    bool GetUseExternalClock() { return use_external_pixel_clock; }
@@ -86,6 +88,7 @@ public:
    int GetNumFlybackSteps() { return n_flyback_steps; }
    bool GetUseDiagnosticCounts() { return use_diagnostic_counts; }
    double GetTriggerDelay() { return trigger_delay_us; }
+   double GetTriggerDuration() { return trigger_duration_us; }
 
    int GetCurrentCount() { return current_count; }
 
@@ -134,6 +137,7 @@ private:
    int n_flyback_steps = 0;
 
    double trigger_delay_us = 0;
+   double trigger_duration_us = 1;
 
    int idx = 0;
    int current_count = 0;

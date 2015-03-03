@@ -174,6 +174,13 @@ void ArduinoCounter::SetTriggerDelay(double trigger_delay_us_)
    SendMessage(MSG_SET_TRIGGER_DELAY, (float)trigger_delay_us);
 }
 
+void ArduinoCounter::SetTriggerDuration(double trigger_duration_us_)
+{
+   trigger_delay_us = trigger_duration_us_;
+   SendMessage(MSG_SET_TRIGGER_DURATION, (float)trigger_duration_us_);
+}
+
+
 void ArduinoCounter::StartLine()
 {
    SendMessage(MSG_START_LINE);
