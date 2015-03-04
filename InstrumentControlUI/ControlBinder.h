@@ -7,6 +7,7 @@
 #include <QLineEdit>
 #include <QComboBox>
 #include <QGroupBox>
+#include <QFileDialog>
 
 #include <functional>
 
@@ -93,6 +94,27 @@ public:
 };
 
 
+template<class V, class U>
+class BoundFilenameControl
+{
+public:
+   template<class V, class U>
+   BoundFilenameControl(ControlBinder* binder, QString name, QLineEdit* widget, QPushButton* button, QString filter, V* obj, void(U::*setter)(const QString&), const QString&(U::*getter)(void), void (U::*signal)(const QString&) = nullptr, Qt::ConnectionType connection_type = Qt::AutoConnection)
+   {
+      auto widget_signal = static_cast<void (QLineEdit::*)(const QString&)>(&QLineEdit::textEdited);
+      auto widget_setter = static_cast<void (QLineEdit::*)(const QString&)>(&QLineEdit::setText);
+
+      QObject::connect(button, &QPushButton::pressed, [filter, obj, getter, setter]()
+      {
+         QString filename = QFileDialog::getSaveFileName(nullptr, "Choose File Name", std::bind(getter, obj)(), filter);
+         if (!filename.isEmpty())
+            std::bind(setter, obj, std::placeholders::_1)(filename);
+      });
+
+      binder->BindWidget(name, widget, widget_setter, widget_signal, static_cast<U*>(obj), setter, getter, signal, connection_type);
+      binder->SetByReference(name, widget, widget_setter, widget_signal, static_cast<U*>(obj), setter, getter, signal);
+   }
+};
 
 class ControlBinder 
 {
@@ -102,6 +124,7 @@ public:
 #define Bind(widget, ...) BindImpl(#widget, widget, ##__VA_ARGS__)
 #define DirectBind(widget, ...) DirectBindImpl(#widget, widget, ##__VA_ARGS__)
 #define QueuedBind(widget, ...) QueuedBindImpl(#widget, widget, ##__VA_ARGS__)
+#define FilenameBind(widget, ...) FilenameBindImpl(#widget, widget, ##__VA_ARGS__)
 
    ControlBinder(QObject* parent, QString object_name)
    {
@@ -126,6 +149,12 @@ protected:
    void QueuedBindImpl(QString name, W* widget, V* obj, void(U::*setter)(T), T(U::*getter)(void), void (U::*signal)(T) = nullptr)
    {
       BoundControl<W, V, U, T>* control = new BoundControl<W, V, U, T>(this, name, widget, obj, setter, getter, signal, Qt::QueuedConnection);
+   }
+
+   template<class V, class U>
+   void FilenameBindImpl(QString name, QLineEdit* widget, QPushButton* button, QString filter, V* obj, void(U::*setter)(const QString&), const QString&(U::*getter)(void), void (U::*signal)(const QString&) = nullptr)
+   {
+      BoundFilenameControl<V, U>* control = new BoundFilenameControl<V, U>(this, name, widget, button, filter, obj, setter, getter, signal);
    }
 
 private:
@@ -196,4 +225,6 @@ private:
    template<class W, class V, class U, class T>
    friend class BoundControl;
 
+   template<class V, class U>
+   friend class BoundFilenameControl;
 };
