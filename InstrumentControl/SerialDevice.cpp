@@ -133,7 +133,7 @@ QByteArray SerialDevice::ReadUntilTerminator(int timeout_ms)
          {
             // Once we've got some data wait for the rest
             data.append(c);
-            something_read = true;
+               something_read = true;
          }
       }
 

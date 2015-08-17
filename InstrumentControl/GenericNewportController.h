@@ -57,6 +57,8 @@ protected:
    void GetControllerState();
    void Sync();
 
+   void StartMonitoringMotion();
+
    template<class T>
    void SendCommand(int axis, QByteArray command, T value);
 
@@ -73,6 +75,8 @@ protected:
    QSerialPort::BaudRate baud;
    QByteArray terminator = "\r\n";
    int controller_index = 1;
+
+   bool in_motion = false;
 };
 
 

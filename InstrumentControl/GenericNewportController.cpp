@@ -71,6 +71,8 @@ void GenericNewportController::UpdateCurrentPosition()
    {
       double current_position = GetCurrentPosition();
       emit CurrentPositionChanged(current_position);
+
+      GetControllerState();
    }
 }
 
@@ -91,8 +93,12 @@ double GenericNewportController::GetTargetPosition()
 
 void GenericNewportController::SetTargetPosition(double position)
 {
+   in_motion = true;
+
    SendCommand(controller_index, "PA", position / units_per_microstep);
    QueryError();
+
+   //StartMonitoringMotion();
 }
 
 double GenericNewportController::GetVelocity()
@@ -160,6 +166,14 @@ void GenericNewportController::Sync()
 
 void GenericNewportController::WaitForMotion()
 {
+   while (in_motion)
+   {
+      QThread::msleep(100);
+   }
+
+   //TODO
+
+   /*
    bool is_moving = true;
 
    while (is_moving)
@@ -173,6 +187,7 @@ void GenericNewportController::WaitForMotion()
 
       is_moving = (state == "28" || state == "1E" || state == "1F"); // moving or homing
    }
+   */
 }
 
 void GenericNewportController::GetControllerState()
@@ -184,6 +199,9 @@ void GenericNewportController::GetControllerState()
 
    QString error = ts_return.left(4);
    QString state = ts_return.right(2);
+
+   in_motion = (state == "28" || state == "1E" || state == "1F"); // moving or homing
+
    /*
     if (state == "10") // not referenced from stage error
    {
