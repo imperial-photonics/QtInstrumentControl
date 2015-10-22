@@ -91,6 +91,12 @@ public:
    double GetTriggerDuration() { return trigger_duration_us; }
 
    int GetCurrentCount() { return current_count; }
+   
+   int GetNextCount() // should  really do this with mutexes! 
+   { 
+      QThread::msleep(2 * dwell_time_ms);
+      return current_count;
+   }
 
    void StartLine();
    void PrimeLine();
@@ -100,7 +106,7 @@ signals:
    void CountUpdated(int count);
    void NewLine(cv::Mat line);
    void LineFinished();
-   void PMTEnabled(bool endabled);
+   void PMTEnabled(bool enabled);
    void OverloadOccured();
    void GalvoOffsetChanged(int galvo_offset);
 

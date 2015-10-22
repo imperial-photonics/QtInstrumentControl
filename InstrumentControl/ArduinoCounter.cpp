@@ -20,7 +20,7 @@ void ArduinoCounter::Init()
 {
    monitor_timer = new QTimer(this);
    connect(monitor_timer, &QTimer::timeout, this, &ArduinoCounter::MonitorCount);
-   monitor_timer->start(100);
+   monitor_timer->start(50);
 
    connect(this, &ArduinoCounter::NewMessage, [](const QString& msg) { cout << msg.toStdString() << "\n"; });
 
