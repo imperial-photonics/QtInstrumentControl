@@ -47,7 +47,7 @@ public:
    void SetImageIndex(unsigned int cur_index_);
    unsigned int GetImageIndex() { return cur_index; };
 
-   int GetNumberOfImages() { return cv_image.size(); } 
+   int GetNumberOfImages() { return static_cast<int>(cv_image.size()); } 
 
 signals:
    void ROISelectionUpdated(bool selecting);

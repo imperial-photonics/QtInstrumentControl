@@ -217,8 +217,9 @@ void ImageRenderWidget::AddImage(cv::Mat image, QString label)
    image_labels.push_back(label);
    cv_image.push_back(image);
 
-   emit MaxImageIndexChanged(cv_image.size()-1);
-   SetImageIndex(cv_image.size() - 1);
+   int sz = static_cast<int>(cv_image.size()) - 1;
+   emit MaxImageIndexChanged(sz);
+   SetImageIndex(sz);
 
    Redraw();
 }
