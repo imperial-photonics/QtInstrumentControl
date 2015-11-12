@@ -13,18 +13,19 @@ find_package(OpenCV REQUIRED)
 find_package(Qt5Widgets REQUIRED)
 find_package(Qt5SerialPort REQUIRED)
 
+option(USE_THORLABS_APT_CONTROLLER false)
+
 set(CMAKE_AUTOMOC ON)
 
 set(SOURCE
    ArduinoCounter.cpp
    SerialDevice.cpp
    GenericNewportController.cpp
-   ThorlabsAPTController.cpp
+   
    ImageSource.cpp
    ThreadedObject.cpp
    AbstractImageWriter.cpp
 )
-
 
 set(HEADERS
    ArduinoCounter.h
@@ -34,11 +35,14 @@ set(HEADERS
    NewportSMC100.h
    NewportNSC200.h
    ThreadedObject.h
-   FTD2XX.h
-   ThorlabsAPTController.h
    ImageSource.h
    AbstractImageWriter.h
 )
+
+if(USE_THORLABS_APT_CONTROLLER)
+   set(SOURCE ${SOURCE} ThorlabsAPTController.cpp)
+   set(HEADERS ${HEADERS} FTD2XX.h ThorlabsAPTController.h)
+endif()
 
 # manually add include directories since we're not linking libraries in
 # this module
