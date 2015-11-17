@@ -19,7 +19,7 @@ public:
 
    virtual ~ThreadedObject();
 
-   virtual void Init() = 0;
+   virtual void init() = 0;
 
 signals:
    void Started();

@@ -30,7 +30,7 @@ ThreadedObject::ThreadedObject(QObject* parent, QThread* ex_thread)
 void ThreadedObject::StartInit()
 {
    QMutexLocker lk(&init_mutex);
-   this->Init();
+   this->init();
    init_cv.wakeAll();
 }
 
