@@ -12,8 +12,8 @@
 
 #include <iostream>
 
-AndorControlWidget::AndorControlWidget(AndorCamera* camera, QFormLayout* parent, QString control, ControlType type, QString suffix, bool use_timer) :
-   CameraControlWidget(camera, parent, control, type, suffix, use_timer, false), 
+AndorControlWidget::AndorControlWidget(AndorCamera* camera, QFormLayout* parent, QString control, ParameterType type, QString suffix, bool use_timer) :
+ParameterWidget(camera, parent, control, type, suffix, use_timer, false),
    Hndl(camera->GetHandle())
 {
    const AT_WC* param = reinterpret_cast<const AT_WC*>(control.utf16());

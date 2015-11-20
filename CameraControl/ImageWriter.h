@@ -15,7 +15,7 @@ class ImageWriter : public ThreadedObject
 public:
    ImageWriter(ImageSource* camera, QObject* parent = 0, QThread* thread = 0);
 
-   void Init();
+   void init();
    void SaveSingle();
 
    void SetFilenameRoot(const QString& file_root_);

@@ -36,6 +36,7 @@ set(HEADERS
    NewportNSC200.h
    ThreadedObject.h
    ImageSource.h
+   ParametricImageSource.h
    AbstractImageWriter.h
 )
 

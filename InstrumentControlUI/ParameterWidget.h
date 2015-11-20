@@ -1,6 +1,6 @@
 #pragma once
 
-#include "AbstractStreamingCamera.h"
+#include "ParametricImageSource.h"
 
 #include <QMainWindow>
 #include <QHBoxLayout>
@@ -22,13 +22,13 @@ public:
    ~WidgetEvent() {};
 };
 
-class CameraControlWidget : public QObject
+class ParameterWidget : public QObject
 {
    Q_OBJECT
 
 public:
-   CameraControlWidget(AbstractStreamingCamera* camera, QFormLayout* parent, const QString& control, ControlType type, const QString& suffix = "", bool use_timer = false, bool auto_init = true);
-   virtual ~CameraControlWidget() {};   
+   ParameterWidget(ParametericImageSource* camera, QFormLayout* parent, const QString& control, ParameterType type, const QString& suffix = "", bool use_timer = false, bool auto_init = true);
+   virtual ~ParameterWidget() {};
    
    void SetControlLock(bool locked);
    void SetWidgetValue();
@@ -61,7 +61,7 @@ private:
    void SendValueToCamera();
    QVariant proposed_value;
 
-   ControlType type;
+   ParameterType type;
    QString suffix;
 
    QFormLayout* layout;
@@ -71,7 +71,7 @@ private:
 
    QTimer* timer;
    QTimer* value_timer;
-   AbstractStreamingCamera* camera;
+   ParametericImageSource* camera;
 
    int is_implemented;
    bool use_timer;

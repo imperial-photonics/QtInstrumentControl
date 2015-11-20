@@ -1,6 +1,6 @@
 #pragma once
 
-#include "ImageSource.h"
+#include "ParametricImageSource.h"
 #include "ImageBuffer.h"
 
 #include <QThread>
@@ -21,14 +21,7 @@ void CHECK(int err);
 void SOFTCHECK(int err);
 
 
-enum ParameterType { Integer, Float, Boolean, Text, Enumeration };
-enum Limit { Min, Max };
-
-typedef ParameterType ControlType; // refactoring
-
-typedef QList<QPair<QString, int>> EnumerationList;
-
-class AbstractStreamingCamera : public ImageSource
+class AbstractStreamingCamera : public ParametericImageSource
 {
    Q_OBJECT
 
@@ -49,14 +42,6 @@ public:
    virtual void SetTriggerMode(TriggerMode trigger_mode) = 0;
    virtual void SoftwareTrigger() = 0;
 
-   virtual void SetParameter(const QString& parameter, ParameterType type, QVariant value) = 0;
-   virtual QVariant GetParameter(const QString& parameter, ParameterType type) = 0;
-   virtual QVariant GetParameterLimit(const QString& parameter, ParameterType type, Limit limit) = 0;
-   virtual QVariant GetParameterMinIncrement(const QString& parameter, ParameterType type) { return QVariant(); }; // returns QVariant() if no min increment
-   virtual EnumerationList GetEnumerationList(const QString& parameter) = 0;
-   virtual bool IsParameterWritable(const QString& parameter) { return true; };
-   virtual bool IsParameterReadOnly(const QString& parameter) { return false; };
-
    virtual void SetFullROI() = 0;
    virtual void SetROI(cv::Rect roi) = 0;
 
@@ -75,8 +60,6 @@ public:
    cv::Mat GetImage();
    cv::Mat GetImageUnsafe();
    cv::Mat BackgroundImage();
-
-   QMutex* control_mutex;
 
 signals:
    void ImageSizeChanged();
@@ -145,7 +128,7 @@ private:
    float* background_ptr;
    cv::Mat background;
 
-   bool init;
+   bool is_init;
    bool buffers_ok;
    int  allocation_idx;
 

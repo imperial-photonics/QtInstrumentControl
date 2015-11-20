@@ -1,4 +1,4 @@
-#include "CameraControlWidget.h"
+#include "ParameterWidget.h"
 
 #include <QCoreApplication>
 #include <QSpinBox>
@@ -11,8 +11,9 @@
 #include <QMutexLocker>
 
 #include <iostream>
+#include <cstdint>
 
-CameraControlWidget::CameraControlWidget(AbstractStreamingCamera* camera, QFormLayout* parent, const QString& control, ControlType type, const QString& suffix, bool use_timer, bool auto_init) :
+ParameterWidget::ParameterWidget(ParametericImageSource* camera, QFormLayout* parent, const QString& control, ParameterType type, const QString& suffix, bool use_timer, bool auto_init) :
 QObject(parent),
 camera(camera),
 layout(parent),
@@ -27,7 +28,7 @@ min_btn(nullptr)
    value_timer = new QTimer();
    value_timer->setSingleShot(true);
    value_timer->setInterval(500);
-   connect(value_timer, &QTimer::timeout, this, &CameraControlWidget::SendValueToCamera);
+   connect(value_timer, &QTimer::timeout, this, &ParameterWidget::SendValueToCamera);
 
    if (auto_init)
       Init();
@@ -36,7 +37,7 @@ min_btn(nullptr)
 /*
    Subclass contructor should call this after appropriate checks
 */
-void CameraControlWidget::Init()
+void ParameterWidget::Init()
 {
    timer = new QTimer(this);
 
@@ -55,15 +56,15 @@ void CameraControlWidget::Init()
 
    if (use_timer)
    {
-      connect(timer, &QTimer::timeout, this, &CameraControlWidget::SetWidgetValue);
+      connect(timer, &QTimer::timeout, this, &ParameterWidget::SetWidgetValue);
       timer->start(500);
    }
 
-   connect(camera, &AbstractStreamingCamera::ControlLockUpdated, this, &CameraControlWidget::SetControlLock, Qt::QueuedConnection);
+   connect(camera, &ParametericImageSource::ControlLockUpdated, this, &ParameterWidget::SetControlLock, Qt::QueuedConnection);
 };
 
 
-bool CameraControlWidget::event(QEvent *event)
+bool ParameterWidget::event(QEvent *event)
 {
    switch (event->type()) {
    case WidgetEvent::ValueUpdated:
@@ -75,7 +76,7 @@ bool CameraControlWidget::event(QEvent *event)
 }
 
 
-void CameraControlWidget::SetControlLock(bool locked)
+void ParameterWidget::SetControlLock(bool locked)
 {
    bool enabled = (!locked) && camera->IsParameterWritable(control);
    obj->setEnabled(enabled);
@@ -86,7 +87,7 @@ void CameraControlWidget::SetControlLock(bool locked)
       max_btn->setEnabled(enabled);
 }
 
-bool CameraControlWidget::CreateWidget()
+bool ParameterWidget::CreateWidget()
 {
    QMutexLocker lk(mutex);
 
@@ -110,7 +111,7 @@ bool CameraControlWidget::CreateWidget()
       spinbox->setMinimum(mx);
 
       connect(spinbox, static_cast<void (QSpinBox::*)(int)>(&QSpinBox::valueChanged),
-         this, &CameraControlWidget::WidgetUpdated);
+         this, &ParameterWidget::WidgetUpdated);
    }
    else if (type == Float)
    {
@@ -125,14 +126,14 @@ bool CameraControlWidget::CreateWidget()
       spinbox->setMinimum(mx);
 
       connect(spinbox, static_cast<void (QDoubleSpinBox::*)(double)>(&QDoubleSpinBox::valueChanged),
-         this, &CameraControlWidget::FloatWidgetUpdated);
+         this, &ParameterWidget::FloatWidgetUpdated);
    }
    else if (type == Boolean)
    {
       QCheckBox* checkbox = new QCheckBox();
       obj = checkbox;
 
-      connect(checkbox, &QCheckBox::stateChanged, this, &CameraControlWidget::BoolWidgetUpdated);
+      connect(checkbox, &QCheckBox::stateChanged, this, &ParameterWidget::BoolWidgetUpdated);
    }
    else if (type == Text)
    {
@@ -140,7 +141,7 @@ bool CameraControlWidget::CreateWidget()
       edit->setMaxLength(1023);
       obj = edit;
 
-      connect(edit, &QLineEdit::textEdited, this, &CameraControlWidget::TextWidgetUpdated);
+      connect(edit, &QLineEdit::textEdited, this, &ParameterWidget::TextWidgetUpdated);
    }
    else if (type == Enumeration)
    {
@@ -148,7 +149,7 @@ bool CameraControlWidget::CreateWidget()
       obj = combobox;
 
       connect(combobox, static_cast<void (QComboBox::*)(int)>(&QComboBox::currentIndexChanged),
-         this, &CameraControlWidget::EnumerationWidgetUpdated);
+         this, &ParameterWidget::EnumerationWidgetUpdated);
    }
 
    if (!(is_read_only) && (type == Integer || type == Float))
@@ -180,7 +181,7 @@ bool CameraControlWidget::CreateWidget()
 }
 
 
-void CameraControlWidget::SetWidgetValue()
+void ParameterWidget::SetWidgetValue()
 {
    if (obj == NULL)
       return;
@@ -243,7 +244,7 @@ void CameraControlWidget::SetWidgetValue()
 
       // suppress signals while we're updating box
       disconnect(combobox, static_cast<void (QComboBox::*)(int)>(&QComboBox::currentIndexChanged),
-         this, &CameraControlWidget::EnumerationWidgetUpdated);
+         this, &ParameterWidget::EnumerationWidgetUpdated);
 
       combobox->clear();
       for (auto& p : list)
@@ -256,12 +257,12 @@ void CameraControlWidget::SetWidgetValue()
       combobox->setCurrentIndex(qidx);
 
       connect(combobox, static_cast<void (QComboBox::*)(int)>(&QComboBox::currentIndexChanged),
-         this, &CameraControlWidget::EnumerationWidgetUpdated);
+         this, &ParameterWidget::EnumerationWidgetUpdated);
    }
 
 };
 
-void CameraControlWidget::LimitClicked(Limit limit)
+void ParameterWidget::LimitClicked(Limit limit)
 {
    proposed_value = camera->GetParameterLimit(control, type, limit);
    SendValueToCamera();
@@ -269,7 +270,7 @@ void CameraControlWidget::LimitClicked(Limit limit)
 
 
 
-void CameraControlWidget::WidgetUpdated(QVariant value)
+void ParameterWidget::WidgetUpdated(QVariant value)
 {
    proposed_value = value;
    
@@ -284,7 +285,7 @@ void CameraControlWidget::WidgetUpdated(QVariant value)
       timer->stop();
 }
 
-void CameraControlWidget::SendValueToCamera()
+void ParameterWidget::SendValueToCamera()
 {
    QMutexLocker lk(mutex);
    if (!camera->IsParameterWritable(control)) return;
@@ -311,28 +312,28 @@ void CameraControlWidget::SendValueToCamera()
    emit ValueChanged();
 }
 
-void CameraControlWidget::IntWidgetUpdated(int value)
+void ParameterWidget::IntWidgetUpdated(int value)
 {
    WidgetUpdated(QVariant(value));
 }
 
-void CameraControlWidget::BoolWidgetUpdated(bool value)
+void ParameterWidget::BoolWidgetUpdated(bool value)
 {
    WidgetUpdated(QVariant(value));
 }
 
 
-void CameraControlWidget::FloatWidgetUpdated(double value)
+void ParameterWidget::FloatWidgetUpdated(double value)
 {
    WidgetUpdated(QVariant(value));
 }
 
-void CameraControlWidget::TextWidgetUpdated(QString value)
+void ParameterWidget::TextWidgetUpdated(QString value)
 {
    WidgetUpdated(QVariant(value));
 }
 
-void CameraControlWidget::EnumerationWidgetUpdated(int index)
+void ParameterWidget::EnumerationWidgetUpdated(int index)
 {
    QComboBox* combo = static_cast<QComboBox*>(obj);
    QVariant var = combo->currentData();

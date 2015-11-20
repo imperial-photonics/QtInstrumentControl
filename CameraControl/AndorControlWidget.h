@@ -1,14 +1,14 @@
 #pragma once
 
-#include "CameraControlWidget.h"
+#include "ParameterWidget.h"
 #include "AndorCamera.h"
 
-class AndorControlWidget : public CameraControlWidget
+class AndorControlWidget : public ParameterWidget
 {
    Q_OBJECT
 
 public:
-   AndorControlWidget(AndorCamera* camera, QFormLayout* parent, QString control, ControlType type, QString suffix = "", bool use_timer = false);
+   AndorControlWidget(AndorCamera* camera, QFormLayout* parent, QString control, ParameterType type, QString suffix = "", bool use_timer = false);
    ~AndorControlWidget();
    
 protected:

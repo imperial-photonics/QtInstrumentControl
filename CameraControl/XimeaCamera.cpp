@@ -46,7 +46,7 @@ AbstractStreamingCamera(parent)
 }
 
 
-void XimeaCamera::Init()
+void XimeaCamera::init()
 {
 
    // Setting "exposure" parameter (1ms)

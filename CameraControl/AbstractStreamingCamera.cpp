@@ -13,7 +13,7 @@ using std::shared_ptr;
 
 
 AbstractStreamingCamera::AbstractStreamingCamera(QObject* parent) :
-   init(false), 
+   is_init(false), 
    allocation_idx(0),
    terminate(false)
 {
@@ -38,7 +38,7 @@ void AbstractStreamingCamera::FreeBuffers()
 {
    QMutexLocker lk(m);
    QMutexLocker lkb(buffer_mutex);
-   init = false;
+   is_init = false;
    allocation_idx++;
    latest_data = shared_ptr<ImageBuffer>(new ImageBuffer());
    for( auto buffer : buffers)
@@ -163,7 +163,7 @@ void AbstractStreamingCamera::AllocateBuffers(int buffer_size_)
       allocation_idx++;
    }
 
-   init = true;
+   is_init = true;
 }
 
 /*

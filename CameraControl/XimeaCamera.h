@@ -18,7 +18,7 @@ public:
    XimeaCamera(int camera_idx, QObject* parent = 0);
    ~XimeaCamera();
 
-   void Init();
+   void init();
 
    int GetNumBytesPerPixel();
    cv::Size GetImageSize();

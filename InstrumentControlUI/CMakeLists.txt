@@ -18,6 +18,7 @@ set(CMAKE_AUTOMOC ON)
 
 set(SOURCE
    ImageRenderWidget.cpp
+   ParameterWidget.cpp
 )
 
 
@@ -27,6 +28,7 @@ set(HEADERS
    ImageRenderWindow.h
    ImageSeriesControl.h
    ImageSeriesScanner.h
+   ParameterWidget.h
 )
 
 # manually add include directories since we're not linking libraries in

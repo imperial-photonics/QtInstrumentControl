@@ -2,8 +2,8 @@ cmake_minimum_required(VERSION 3.0)
 
 project(CameraControl) 
 
-#option(INCLUDE_CAMERA_ANDOR "Use Andor Camera" OFF)
-#option(INCLUDE_CAMERA_XIMEA "Use Ximea Camera" OFF)
+option(INCLUDE_CAMERA_ANDOR "Use Andor Camera" OFF)
+option(INCLUDE_CAMERA_XIMEA "Use Ximea Camera" OFF)
 
 cmake_policy(SET CMP0020 NEW)
 cmake_policy(SET CMP0043 NEW)
@@ -20,7 +20,7 @@ find_package(OpenCV REQUIRED)
 
 set(CMAKE_AUTOMOC ON)
 
-
+set(Ximea_DIR C:/XIMEA/API)
 
 # Source Files
 #====================================
@@ -48,18 +48,16 @@ endif (INCLUDE_CAMERA_XIMEA)
 set(SOURCE
    ImageBuffer.cpp
    AbstractStreamingCamera.cpp
-   CameraControlWidget.cpp
    ImageWriter.cpp
 )
 
 set(HEADERS
    AbstractStreamingCamera.h
    ImageBuffer.h
-   CameraControlWidget.h
    ImageWriter.h
 )
 
-include_directories(${Ximea_DIR} ${ANDOR_DIR} ${QT_USE_FILE} ${COMMON_INCLUDE_DIR} ${InstrumentControl_INCLUDE_DIR})
+include_directories(${Ximea_DIR} ${ANDOR_DIR} ${QT_USE_FILE} ${COMMON_INCLUDE_DIR} ${InstrumentControl_INCLUDE_DIR} ${InstrumentControlUI_INCLUDE_DIR})
 
 if (CUDA_FOUND)
 	include_directories(${CUDA_INCLUDE_DIRS})
@@ -77,6 +75,7 @@ qt5_use_modules(CameraControl Widgets PrintSupport OpenGL Gui)
 set(CameraControl_INCLUDE_DIR ${Ximea_DIR}
                               ${ANDOR_DIR} 
                               ${InstrumentControl_INCLUDE_DIR} 
+                              ${InstrumentControlUI_INCLUDE_DIR}
                               ${CMAKE_CURRENT_SOURCE_DIR} 
                               PARENT_SCOPE)
 
@@ -84,5 +83,6 @@ set(CameraControl_LIBRARIES ${Ximea_LIBRARIES}
                             ${ANDOR_LIBRARIES}
                             ${CameraControl_CUDA_LIBRARIES} 
                             ${InstrumentControl_LIBRARIES}
+                            ${InstrumentControlUI_LIBRARIES}
                             ${OpenCV_LIBS} 
                             PARENT_SCOPE)

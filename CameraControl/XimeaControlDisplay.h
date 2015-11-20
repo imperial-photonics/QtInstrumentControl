@@ -1,7 +1,7 @@
 #pragma once
 
 #include "XimeaCamera.h"
-#include "CameraControlWidget.h"
+#include "ParameterWidget.h"
 
 XimeaCamera* GetXimeaFromUser(bool choose_camera = true, QObject* parent = 0);
 
@@ -24,11 +24,11 @@ private:
    template<typename... Args>
    void AddWidget(Args... args)
    {
-      CameraControlWidget* w = new CameraControlWidget(camera, args...);
+      ParameterWidget* w = new ParameterWidget(camera, args...);
       widgets.push_back(w);
       
       // Ximea api provides no callback, so manually check all widgets when one value changes
-      connect(w, &CameraControlWidget::ValueChanged, this, &XimeaControlDisplay::UpdateWidgets);
+      connect(w, &ParameterWidget::ValueChanged, this, &XimeaControlDisplay::UpdateWidgets);
    }
 
    void UpdateWidgets()
@@ -40,6 +40,6 @@ private:
    void UpdateStreamingStatus(bool is_streaming);
 
    XimeaCamera* camera;
-   QList<CameraControlWidget*> widgets;
+   QList<ParameterWidget*> widgets;
 
 };

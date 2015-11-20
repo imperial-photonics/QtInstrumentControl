@@ -11,7 +11,7 @@ camera(camera)
    StartThread();
 }
 
-void ImageWriter::Init()
+void ImageWriter::init()
 {
    connect(camera, &ImageSource::NewImage, this, &ImageWriter::ImageUpdated, Qt::QueuedConnection);
 };

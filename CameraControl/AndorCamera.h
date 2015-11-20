@@ -15,7 +15,7 @@ public:
    AndorCamera(int idx = 0, QObject* parent = 0);
    ~AndorCamera();
 
-   void Init();
+   void init();
 
    static void GetConnectedCameras(QStringList& camera_list, QVector<int>& camera_idx);
    
