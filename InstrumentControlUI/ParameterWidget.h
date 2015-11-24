@@ -27,7 +27,7 @@ class ParameterWidget : public QObject
    Q_OBJECT
 
 public:
-   ParameterWidget(ParametericImageSource* camera, QFormLayout* parent, const QString& control, ParameterType type, const QString& suffix = "", bool use_timer = false, bool auto_init = true);
+   ParameterWidget(ParametricImageSource* camera, QFormLayout* parent, const QString& control, ParameterType type, const QString& suffix = "", bool use_timer = false, bool auto_init = true);
    virtual ~ParameterWidget() {};
    
    void SetControlLock(bool locked);
@@ -71,7 +71,7 @@ private:
 
    QTimer* timer;
    QTimer* value_timer;
-   ParametericImageSource* camera;
+   ParametricImageSource* camera;
 
    int is_implemented;
    bool use_timer;

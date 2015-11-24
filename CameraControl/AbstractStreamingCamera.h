@@ -21,7 +21,7 @@ void CHECK(int err);
 void SOFTCHECK(int err);
 
 
-class AbstractStreamingCamera : public ParametericImageSource
+class AbstractStreamingCamera : public ParametricImageSource
 {
    Q_OBJECT
 

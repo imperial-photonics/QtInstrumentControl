@@ -59,7 +59,7 @@ public:
          QString title = value_name;
          title.append(" Scan");
 
-         ImageRenderWindow* window = new ImageRenderWindow(title);
+         ImageRenderWindow* window = new ImageRenderWindow(nullptr, title);
          ImageRenderWidget* render_widget = window->GetRenderWidget();
          window->show();
          emit NewRenderWindow(window);

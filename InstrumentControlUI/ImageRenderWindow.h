@@ -8,7 +8,8 @@ class ImageRenderWindow : public QWidget, protected Ui::ImageRenderWindow
 
 public:
 
-   ImageRenderWindow(QString title, ImageSource* source = nullptr) 
+   ImageRenderWindow(QWidget* parent = 0, QString title = "Display", ImageSource* source = nullptr) :
+      QWidget(parent)
    {   
       setupUi(this);
 

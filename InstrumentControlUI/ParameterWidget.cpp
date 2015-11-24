@@ -13,7 +13,7 @@
 #include <iostream>
 #include <cstdint>
 
-ParameterWidget::ParameterWidget(ParametericImageSource* camera, QFormLayout* parent, const QString& control, ParameterType type, const QString& suffix, bool use_timer, bool auto_init) :
+ParameterWidget::ParameterWidget(ParametricImageSource* camera, QFormLayout* parent, const QString& control, ParameterType type, const QString& suffix, bool use_timer, bool auto_init) :
 QObject(parent),
 camera(camera),
 layout(parent),
@@ -60,7 +60,7 @@ void ParameterWidget::Init()
       timer->start(500);
    }
 
-   connect(camera, &ParametericImageSource::ControlLockUpdated, this, &ParameterWidget::SetControlLock, Qt::QueuedConnection);
+   connect(camera, &ParametricImageSource::ControlLockUpdated, this, &ParameterWidget::SetControlLock, Qt::QueuedConnection);
 };
 
 
