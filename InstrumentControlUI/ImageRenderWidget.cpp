@@ -22,7 +22,7 @@ QImage CopyToQImage(cv::Mat& cv_image, int bit_shift)
    else if (channels == 1)
       format = QImage::Format_Indexed8;
    else
-      throw std::exception("Unsupported number of channels");
+      throw std::runtime_error("Unsupported number of channels");
 
    QImage q_image(size.width, size.height, format);
 
