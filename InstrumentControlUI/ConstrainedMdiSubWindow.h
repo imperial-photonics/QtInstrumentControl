@@ -25,8 +25,6 @@ protected:
 
       if (w != nullptr)
       {
-         auto ms = w->maximumSize();
-
          if (w->maximumWidth() < s.width())
          {
             s.setWidth(w->maximumWidth());

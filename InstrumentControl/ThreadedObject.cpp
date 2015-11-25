@@ -47,5 +47,4 @@ void ThreadedObject::StartThread()
 
 ThreadedObject::~ThreadedObject()
 {
-   int a = 0;
 }

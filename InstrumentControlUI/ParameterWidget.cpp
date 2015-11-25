@@ -15,14 +15,14 @@
 
 ParameterWidget::ParameterWidget(ParametricImageSource* camera, QFormLayout* parent, const QString& control, ParameterType type, const QString& suffix, bool use_timer, bool auto_init) :
 QObject(parent),
-camera(camera),
-layout(parent),
-mutex(camera->control_mutex),
 control(control),
 type(type),
-use_timer(use_timer),
+layout(parent),
+min_btn(nullptr),
 max_btn(nullptr),
-min_btn(nullptr)
+camera(camera),
+use_timer(use_timer),
+mutex(camera->control_mutex)
 {
    // Timer to delay setting of value after entry (for typing)
    value_timer = new QTimer();

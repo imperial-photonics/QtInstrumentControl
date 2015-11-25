@@ -8,8 +8,8 @@ using namespace std;
 
 GenericNewportController::GenericNewportController(const QString& controller_type, const QString& stage_type, QObject* parent) :
 SerialDevice(parent),
-controller_type(controller_type),
-stage_type(stage_type)
+stage_type(stage_type),
+controller_type(controller_type)
 {
 }
 
