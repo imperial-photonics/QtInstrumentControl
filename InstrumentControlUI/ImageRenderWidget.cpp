@@ -267,16 +267,28 @@ void ImageRenderWidget::AddImage(cv::Mat image, QString label)
 */
 void ImageRenderWidget::paintEvent(QPaintEvent *event)
 {
+   QPainter painter;
+   painter.begin(this);
+
+
+   QRect window_rect(QPoint(0, 0), size());
+
+   painter.setBrush(Qt::SolidPattern);
+   painter.drawRect(window_rect);
+
+
    if (cur_index >= cv_image.size())
+   {
+      painter.end();
       return;
+   }
 
    cv::Mat im = cv_image[cur_index];
    QString im_label = image_labels[cur_index];
 
-   QPainter painter;
-   painter.begin(this);
 
    cv::Size image_size = im.size();
+
 
    if (image_size.area() > 0)
    {
@@ -293,15 +305,10 @@ void ImageRenderWidget::paintEvent(QPaintEvent *event)
       if (image.format() == QImage::Format_Indexed8)
          image.setColorTable(colors);
 
-
-      QRect window_rect(QPoint(0, 0), size());
-
       if (!use_roi)
          roi = QRect(0, 0, image_size.width, image_size.height);
 
-      painter.setBrush(Qt::SolidPattern);
-      painter.drawRect(window_rect);
-
+      
       if ((image_size.width > 1) && (image_size.height > 1))
       {
          painter.drawImage(window_rect, image, roi);
