@@ -29,6 +29,7 @@ public:
    void SetSource(ImageSource* source_) { source = source_; }
    void SetBitShift(int bit_shift_);
    void AddImage(cv::Mat image, QString label = QString(""));
+   void SetImage(cv::Mat& image);
 
    void SelectROI(bool checked);
    void ResetROI() { use_roi = false; }
@@ -49,17 +50,21 @@ public:
 
    int GetNumberOfImages() { return static_cast<int>(cv_image.size()); } 
 
+   int heightForWidth(int w) const;
+   bool hasHeightForWidth() const;
+
 signals:
    void ROISelectionUpdated(bool selecting);
    void PointClicked(QPointF point);
    void LabelChanged(QString label);
+   void ConstrainWidth(int width);
 
    void MaxImageIndexChanged(unsigned int n_images);
    void ImageIndexChanged(unsigned int index);
 
 protected:
   
-   void EnforceAspectRatio();
+   void EnforceAspectRatio(QSize old_size);
    QPoint GetTruePos(QPoint pos);
 
    void resizeEvent(QResizeEvent* event);
@@ -86,7 +91,7 @@ private:
 
    QPoint roi_start;
 
-   bool use_roi;
+   bool use_roi = false;
    QRect roi;
 
    QPoint selected_pos;

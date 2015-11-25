@@ -10,25 +10,37 @@
 QImage CopyToQImage(cv::Mat& cv_image, int bit_shift)
 {
    cv::Size size = cv_image.size();
-   QImage q_image(size.width, size.height, QImage::Format_Indexed8);
-   
-   int image_type = cv_image.type();
+   int depth = cv_image.depth();
+   int channels = cv_image.channels();
+
+   QImage::Format format;
+   if (channels == 4)
+   {
+      format = QImage::Format::Format_ARGB32;
+      assert(depth == CV_8U);
+   }
+   else if (channels == 1)
+      format = QImage::Format_Indexed8;
+   else
+      throw std::exception("Unsupported number of channels");
+
+   QImage q_image(size.width, size.height, format);
 
    for (int y = 0; y < size.height; y++)
    {
       unsigned char* image_ptr = q_image.scanLine(y);
 
-      if (image_type == CV_8U)
+      if (depth == CV_8U)
       {
          unsigned char* data_ptr = cv_image.row(y).data;
-         for (int x = 0; x < size.width; x++)
+         for (int x = 0; x < size.width * channels; x++)
          {
             unsigned char d = data_ptr[x] << (8 - bit_shift);
             image_ptr[x] = d;
          }
 
       }
-      else if (image_type == CV_16U)
+      else if (depth == CV_16U)
       {
          unsigned short* data_ptr = reinterpret_cast<unsigned short*>(cv_image.row(y).data);
          for (int x=0; x < size.width; x++)
@@ -39,14 +51,18 @@ QImage CopyToQImage(cv::Mat& cv_image, int bit_shift)
             image_ptr[x] = d;
          }
       }
-      else if (image_type == CV_32F)
+      else if (depth == CV_32F)
       {
          float* data_ptr = reinterpret_cast<float*>(cv_image.row(y).data);
          for (int x=0; x < size.width; x++)
             image_ptr[x] = 255 * data_ptr[x];
       }
    }
-   return q_image;
+
+   if (format == QImage::Format_ARGB32)
+      return q_image.convertToFormat(QImage::Format_ARGB32_Premultiplied);
+   else
+      return q_image;
 }
 
 
@@ -55,7 +71,7 @@ ImageRenderWidget::ImageRenderWidget(QWidget *parent)
  : source(nullptr), 
    QWidget(parent), 
    image(NULL), 
-   bit_shift(0),
+   bit_shift(8),
    use_overlay(true), 
    selecting_roi(false), 
    use_roi(false),
@@ -69,6 +85,10 @@ ImageRenderWidget::ImageRenderWidget(QWidget *parent)
    connect(timer, &QTimer::timeout, this, &ImageRenderWidget::GetImageFromSource);
    timer->start(16);
 
+   QSizePolicy policy(QSizePolicy::Preferred, QSizePolicy::Preferred);
+   policy.setHeightForWidth(true);
+
+   setSizePolicy(policy);
 }
 
 void ImageRenderWidget::SetBitShift(int bit_shift_)
@@ -107,24 +127,35 @@ void ImageRenderWidget::SetImageIndex(unsigned int cur_index_)
    Redraw();
 }
 
-void ImageRenderWidget::EnforceAspectRatio()
+void ImageRenderWidget::EnforceAspectRatio(QSize old_size)
 {
-
-   int heightFromWidth = (int)(width()*ratio);
-   int widthFromHeight = (int)(height() / ratio);
-
-   if (heightFromWidth <= height())
-      sz = QSize(width(), heightFromWidth);
-   else
-      sz = QSize(widthFromHeight, height());
-
-
-   resize(sz);
+   if (width() > height())
+   {
+      setMaximumWidth(height());
+      emit ConstrainWidth(height());
+   }
+   else if (maximumWidth() < QWIDGETSIZE_MAX)
+   {
+         setMaximumWidth(maximumWidth() + 5);
+         emit ConstrainWidth(maximumWidth());
+   }
 }
+
+int ImageRenderWidget::heightForWidth(int w) const
+{ 
+   return w; 
+};
+
+bool ImageRenderWidget::hasHeightForWidth() const
+{
+   return true;
+}
+
+
 
 void ImageRenderWidget::resizeEvent(QResizeEvent* event)
 {
-   EnforceAspectRatio();
+   EnforceAspectRatio(event->oldSize());
 }
 
 void ImageRenderWidget::mousePressEvent(QMouseEvent* event)
@@ -195,15 +226,22 @@ void ImageRenderWidget::GetImageFromSource()
    if (source == nullptr)
       return;
    
+   cv::Mat im = source->GetImage();
+   //SetImage(im);
+
+}
+
+void ImageRenderWidget::SetImage(cv::Mat& im)
+{
    if (cv_image.empty())
    {
-      cv_image.push_back(cv::Mat(1, 1, CV_8U));
+      cv_image.push_back(cv::Mat(1, 1, CV_8U, cvScalar(0)));
       image_labels.push_back("");
       cur_index = 0;
    }
 
    // Get the latest image from the source
-   cv_image[cur_index] = source->GetImage();
+   cv_image[cur_index] = im;
 
    Redraw();
 }
@@ -247,19 +285,22 @@ void ImageRenderWidget::paintEvent(QPaintEvent *event)
       if (new_ratio != ratio)
       {
          ratio = new_ratio;
-         EnforceAspectRatio();
+         EnforceAspectRatio(size());
       }
 
       QImage image = CopyToQImage(im, bit_shift);
 
-
-      image.setColorTable(colors);
+      if (image.format() == QImage::Format_Indexed8)
+         image.setColorTable(colors);
 
 
       QRect window_rect(QPoint(0, 0), size());
 
       if (!use_roi)
          roi = QRect(0, 0, image_size.width, image_size.height);
+
+      painter.setBrush(Qt::SolidPattern);
+      painter.drawRect(window_rect);
 
       if ((image_size.width > 1) && (image_size.height > 1))
       {

@@ -29,6 +29,7 @@ set(HEADERS
    ImageSeriesControl.h
    ImageSeriesScanner.h
    ParameterWidget.h
+   ConstrainedMdiSubWindow.h
 )
 
 # manually add include directories since we're not linking libraries in
