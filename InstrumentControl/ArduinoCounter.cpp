@@ -237,11 +237,6 @@ void ArduinoCounter::GetCount()
 
 QByteArray ArduinoCounter::ReadBytes(int n_bytes, int timeout_ms)
 {
-   char a[10][4];
-
-   char* b = a[4];
-
-
    int attempts = timeout_ms / 100;
    QByteArray data;
 
@@ -313,7 +308,6 @@ void ArduinoCounter::ReadData()
 QByteArray ArduinoCounter::ProcessMessage(QByteArray data)
 {
    unsigned char msg = data[0] & 0x7F;
-   char* a = data.data();
    uint32_t param = *reinterpret_cast<uint32_t*>(data.data() + 1);
 
    QByteArray payload;
@@ -326,9 +320,6 @@ QByteArray ArduinoCounter::ProcessMessage(QByteArray data)
          return payload;
       }
       payload = data.mid(5);
-
-      char b = data[0] & 0x7F;
-
    }
 
 
@@ -343,9 +334,7 @@ QByteArray ArduinoCounter::ProcessMessage(QByteArray data)
       case MSG_LINE_DATA:
       {
          int n_px = payload.size() / 2;
-         uint16_t* d = reinterpret_cast<uint16_t*>(payload.data());
          cv::Mat line(1, n_px, CV_16U, payload.data());
-         //std::cout << "New line\n";
          emit NewLine(line);
       } break;
       case MSG_LINE_FINISHED:

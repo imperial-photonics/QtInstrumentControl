@@ -112,8 +112,6 @@ void SerialDevice::WriteWithTerminator(const QByteArray& command)
 QByteArray SerialDevice::ReadUntilTerminator(int timeout_ms)
 {
    QByteArray data;
-   qint64 tstart = QDateTime::currentMSecsSinceEpoch();
-   qint64 telapsed = 0;
    bool finished = false;
    bool something_read = false;
    

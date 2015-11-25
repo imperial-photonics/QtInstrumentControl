@@ -165,8 +165,6 @@ void ArduinoCounter::SendMessage(char msg, T param, bool require_connection)
 
    char* p = reinterpret_cast<char*>(&param);
 
-   bool a = serial_port->isOpen();
-
    serial_port->write(&msg, 1);
    serial_port->write(p, 4);
    serial_port->flush();

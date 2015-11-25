@@ -22,7 +22,7 @@ QImage CopyToQImage(cv::Mat& cv_image, int bit_shift)
    else if (channels == 1)
       format = QImage::Format_Indexed8;
    else
-      throw std::exception("Unsupported number of channels");
+      throw std::runtime_error("Unsupported number of channels");
 
    QImage q_image(size.width, size.height, format);
 
@@ -68,9 +68,9 @@ QImage CopyToQImage(cv::Mat& cv_image, int bit_shift)
 
 
 ImageRenderWidget::ImageRenderWidget(QWidget *parent)
- : source(nullptr), 
-   QWidget(parent), 
-   image(NULL), 
+ : QWidget(parent),
+   image(NULL),
+   source(nullptr),
    bit_shift(8),
    use_overlay(true), 
    selecting_roi(false), 
@@ -189,10 +189,6 @@ void ImageRenderWidget::mouseReleaseEvent(QMouseEvent* event)
       return;
 
    selected_pos = GetTruePos(event->pos());
-
-   int a = cv_image[cur_index].type();
-   cv::Size s = cv_image[cur_index].size();
-
 
    if (selecting_roi && has_roi_start)
    {
