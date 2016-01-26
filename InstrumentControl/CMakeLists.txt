@@ -8,7 +8,7 @@ project(InstrumentControl)
 cmake_policy(SET CMP0020 NEW)
 cmake_policy(SET CMP0043 NEW)
 
-find_package(OpenCV REQUIRED)
+find_package(OpenCV REQUIRED core)
 
 find_package(Qt5Widgets REQUIRED)
 find_package(Qt5SerialPort REQUIRED)
@@ -47,8 +47,7 @@ endif()
 
 # manually add include directories since we're not linking libraries in
 # this module
-INCLUDE_DIRECTORIES(${Qt5Widgets_INCLUDE_DIRS} ${Qt5SerialPort_INCLUDE_DIRS})
-
+include_directories(${Qt5Widgets_INCLUDE_DIRS} ${Qt5SerialPort_INCLUDE_DIRS} ${OpenCV_INCLUDE_DIRS})
 
 add_library(InstrumentControl OBJECT ${SOURCE} ${HEADERS} ${UI_HEADERS})
 

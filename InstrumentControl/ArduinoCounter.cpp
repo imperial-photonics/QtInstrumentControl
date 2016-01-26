@@ -4,6 +4,7 @@
 
 #include <QThread>
 #include <algorithm>
+#include <iostream>
 
 using namespace std;
 
@@ -22,7 +23,7 @@ void ArduinoCounter::Init()
    connect(monitor_timer, &QTimer::timeout, this, &ArduinoCounter::MonitorCount);
    monitor_timer->start(50);
 
-   connect(this, &ArduinoCounter::NewMessage, [](const QString& msg) { cout << msg.toStdString() << "\n"; });
+   connect(this, &ArduinoCounter::NewMessage, [](const QString& msg) { std::cout << msg.toStdString() << "\n"; });
 
    SerialDevice::Init();
 }

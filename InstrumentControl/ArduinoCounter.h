@@ -1,7 +1,7 @@
 #pragma once
 
 #include "SerialDevice.h"
-#include "cv.h"
+#include <opencv2/core.hpp>
 
 // Admin commands
 #define MSG_IDENTIFY 0x49 // 'I'

@@ -5,7 +5,7 @@ project(InstrumentControlUI)
 cmake_policy(SET CMP0020 NEW)
 cmake_policy(SET CMP0043 NEW)
 
-find_package(OpenCV REQUIRED)
+find_package(OpenCV REQUIRED core highgui)
 
 find_package(Qt5Widgets REQUIRED)
 
@@ -34,9 +34,11 @@ set(HEADERS
 
 # manually add include directories since we're not linking libraries in
 # this module
-INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR} ${Qt5Widgets_INCLUDE_DIRS} ${Qt5SerialPort_INCLUDE_DIRS} ${InstrumentControl_INCLUDE_DIR} ${CMAKE_CURRENT_BINARY_DIR})
 
-set(InstrumentControlUI_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR} ${InstrumentControl_INCLUDE_DIR} ${CMAKE_CURRENT_BINARY_DIR} PARENT_SCOPE)
+set(COMMON_INCLUDE ${CMAKE_CURRENT_SOURCE_DIR} ${InstrumentControl_INCLUDE_DIR} ${CMAKE_CURRENT_BINARY_DIR} ${OpenCV_INCLUDE_DIRS})
+include_directories(${COMMON_INCLUDE} ${Qt5Widgets_INCLUDE_DIRS} ${Qt5SerialPort_INCLUDE_DIRS})
+
+set(InstrumentControlUI_INCLUDE_DIR ${COMMON_INCLUDE} PARENT_SCOPE)
 
 add_library(InstrumentControlUI OBJECT ${SOURCE} ${HEADERS} ${UI_HEADERS})
 
