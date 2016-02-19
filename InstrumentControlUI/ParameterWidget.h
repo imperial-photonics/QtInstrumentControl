@@ -30,16 +30,16 @@ public:
    ParameterWidget(ParametricImageSource* camera, QFormLayout* parent, const QString& control, ParameterType type, const QString& suffix = "", bool use_timer = false, bool auto_init = true);
    virtual ~ParameterWidget() {};
    
-   void SetControlLock(bool locked);
-   void SetWidgetValue();
+   void setControlLock(bool locked);
+   void setWidgetValue();
 
 signals:
 
-   void ValueChanged();
+   void valueChanged();
 
 protected:
 
-   void Init();
+   void init();
    bool event(QEvent *event);
 
 protected:
@@ -48,17 +48,17 @@ protected:
 
 private:
 
-   bool CreateWidget();
+   bool createWidget();
 
-   void WidgetUpdated(QVariant value);
-   void BoolWidgetUpdated(bool value);
-   void IntWidgetUpdated(int value);
-   void FloatWidgetUpdated(double value);
-   void TextWidgetUpdated(QString value);
-   void EnumerationWidgetUpdated(int index);
-   void LimitClicked(Limit limit);
+   void widgetUpdated(QVariant value);
+   void boolWidgetUpdated(bool value);
+   void intWidgetUpdated(int value);
+   void floatWidgetUpdated(double value);
+   void textWidgetUpdated(QString value);
+   void enumerationWidgetUpdated(int index);
+   void limitClicked(Limit limit);
 
-   void SendValueToCamera();
+   void sendValueToCamera();
    QVariant proposed_value;
 
    ParameterType type;

@@ -18,16 +18,16 @@ public:
    ParametricImageSource(QObject* parent = 0) :
       ImageSource(parent) {}
 
-   virtual void SetParameter(const QString& parameter, ParameterType type, QVariant value) {};
-   virtual QVariant GetParameter(const QString& parameter, ParameterType type) { return QVariant(); };
-   virtual QVariant GetParameterLimit(const QString& parameter, ParameterType type, Limit limit) { return 0; };
-   virtual QVariant GetParameterMinIncrement(const QString& parameter, ParameterType type) { return QVariant(); }; // returns QVariant() if no min increment
-   virtual EnumerationList GetEnumerationList(const QString& parameter) { return EnumerationList(); };
-   virtual bool IsParameterWritable(const QString& parameter) { return true; };
-   virtual bool IsParameterReadOnly(const QString& parameter) { return false; };
+   virtual void setParameter(const QString& parameter, ParameterType type, QVariant value) {};
+   virtual QVariant getParameter(const QString& parameter, ParameterType type) { return QVariant(); };
+   virtual QVariant getParameterLimit(const QString& parameter, ParameterType type, Limit limit) { return 0; };
+   virtual QVariant getParameterMinIncrement(const QString& parameter, ParameterType type) { return QVariant(); }; // returns QVariant() if no min increment
+   virtual EnumerationList getEnumerationList(const QString& parameter) { return EnumerationList(); };
+   virtual bool isParameterWritable(const QString& parameter) { return true; };
+   virtual bool isParameterReadOnly(const QString& parameter) { return false; };
 
    QMutex* control_mutex;
 
 signals:
-   void ControlLockUpdated(bool locked);
+   void controlLockUpdated(bool locked);
 };
