@@ -9,11 +9,10 @@
 using namespace std;
 
 ArduinoCounter::ArduinoCounter(QObject *parent, QThread* thread) :
-   SerialDevice(parent, thread)
+   AbstractArduinoDevice(parent, thread)
    
 {
    port_description = "Arduino Due";
-
    StartThread();
 }
 
@@ -23,9 +22,7 @@ void ArduinoCounter::Init()
    connect(monitor_timer, &QTimer::timeout, this, &ArduinoCounter::MonitorCount);
    monitor_timer->start(50);
 
-   connect(this, &ArduinoCounter::NewMessage, [](const QString& msg) { std::cout << msg.toStdString() << "\n"; });
-
-   SerialDevice::Init();
+   AbstractArduinoDevice::Init();
 }
 
 void ArduinoCounter::MonitorCount()
@@ -34,54 +31,9 @@ void ArduinoCounter::MonitorCount()
       GetCount();
 }
 
-void ArduinoCounter::ResetDevice(const QString& port_name)
+
+void ArduinoCounter::SetupAfterConnection()
 {
-   // Reset Arduino by connected and disconnecting
-   // with baud rate 1200
-
-   QString m("Trying to reset Arduino on port: ");
-   m.append(port_name);
-   NewMessage(m);
-
-   QSerialPort port;
-   port.setPortName(port_name);
-   port.setFlowControl(QSerialPort::HardwareControl);
-   port.setReadBufferSize(1000000);
-   port.setBaudRate(1200);
-
-   port.open(QIODevice::ReadWrite);
-   port.close();
-
-   QThread::msleep(1000); // let arduino reset
-}
-
-
-bool ArduinoCounter::ConnectToDevice(const QString& port)
-{
-   QMutexLocker lk(&connection_mutex);
-
-   QString m("Trying to connect to Arduino on port: ");
-   m.append(port);
-   NewMessage(m);
-
-   // Try and open serial port
-   if (!OpenSerialPort(port, QSerialPort::HardwareControl, QSerialPort::Baud9600))
-      return false;
-
-   // Check that arduino identifies correctly
-   /*
-   SendMessage(MSG_IDENTIFY, uint32_t(0), false);
-   QByteArray response = WaitForMessage(MSG_IDENTITY);
-   if (response != "Photon Counter")
-   {
-      serial_port->close();
-      return false;
-   }
-   */
-
-   connect(serial_port, &QSerialPort::readyRead, this, &ArduinoCounter::ReadData);
-
-   SetConnected();
    SetDwellTime(dwell_time_ms);
    SetUseExternalPixelClock(use_external_pixel_clock);
    SetUseExternalLineClock(use_external_line_clock);
@@ -89,11 +41,6 @@ bool ArduinoCounter::ConnectToDevice(const QString& port)
    SetExternalClockDivisor(ext_clock_divisor);
    SetNumFlybackSteps(n_flyback_steps);
    SetUseDiagnosticCounts(use_diagnostic_counts);
-
-
-   emit NewMessage("Connected to Arduino.");
-   return true;
-
 }
 
 void ArduinoCounter::SetStreaming(bool streaming_)
@@ -212,118 +159,17 @@ void ArduinoCounter::SetPMTEnabled(bool enabled)
    emit PMTEnabled(enabled);
 }
 
-void ArduinoCounter::SendCommand(char command[], float value)
-{   
-   if (!connected)
-      return;
-
-   QMutexLocker lk(&connection_mutex);
-
-   // Write to arduino
-   QByteArray b;
-   b.append(command);
-
-   if (!isnan(value)) // not NAN
-      b.append((char*)&value, sizeof(value));
-
-   serial_port->write(b);
-   serial_port->flush();
-}
-
 void ArduinoCounter::GetCount()
 {
    SendMessage(MSG_TRIGGER);
 }
 
 
-QByteArray ArduinoCounter::ReadBytes(int n_bytes, int timeout_ms)
-{
-   int attempts = timeout_ms / 100;
-   QByteArray data;
-
-   QMutexLocker lk(&connection_mutex);
-
-   while (data.size() < n_bytes && attempts > 0)
-   {
-      serial_port->waitForReadyRead(100);
-      QByteArray d = serial_port->read(n_bytes - data.size());
-      data.append(d);
-
-      if (d.isEmpty())
-         attempts--;
-   }
-
-   return data;
-}
-
-
-QByteArray ArduinoCounter::WaitForMessage(char msg, int timeout_ms)
-{
-   int packet_size = 5;
-   QByteArray data;
-   
-   do
-   {
-      data = ReadBytes(5);
-
-      if (data.size() == packet_size)
-      {
-         QByteArray payload = ProcessMessage(data);
-         //if (bytes_left_in_message > 0);
-         //data.append( ReadBytes() )
-         if ((data[0] & 0x7F) == msg)
-            return payload;
-      }
-   } while (data.size() > 0);
-
-   return QByteArray();
-}
-
-/*
-   Reader function to monitor communications from Arduino.
-   Builds up packets until they're complete and then dispatches
-   them to ProcessMessage(...)
-*/
-void ArduinoCounter::ReadData()
-{
-   QMutexLocker lk(&connection_mutex);
-
-
-   while (serial_port->bytesAvailable() > bytes_left_in_message)
-   {
-      QByteArray d = serial_port->read(bytes_left_in_message);
-      bytes_left_in_message -= d.size();
-      current_message.append(d);
-
-      if (bytes_left_in_message == 0)
-         ProcessMessage(current_message);
-
-      if (bytes_left_in_message == 0)
-         bytes_left_in_message = 5;
-   }
-}
-
 /*
    Interpet a message packet from Arduino
 */
-QByteArray ArduinoCounter::ProcessMessage(QByteArray data)
+void ArduinoCounter::ProcessMessage(const char msg, uint32_t param, QByteArray payload)
 {
-   unsigned char msg = data[0] & 0x7F;
-   uint32_t param = *reinterpret_cast<uint32_t*>(data.data() + 1);
-
-   QByteArray payload;
-   if (data[0] & 0x80) // message has payload
-   {
-      int total_bytes_expected = param + 5;
-      if (data.size() < total_bytes_expected)
-      {
-         bytes_left_in_message = total_bytes_expected - data.size();
-         return payload;
-      }
-      payload = data.mid(5);
-   }
-
-
 
    switch (msg)
    {
@@ -348,14 +194,4 @@ QByteArray ArduinoCounter::ProcessMessage(QByteArray data)
          emit NewMessage(QString("Arduino Message: %1\n").arg(param));
       }
    }
-
-   current_message.clear();
-
-   return payload;
-}
-
-
-ArduinoCounter::~ArduinoCounter()
-{
-   serial_port->close();
 }

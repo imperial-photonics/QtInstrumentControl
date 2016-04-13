@@ -1,6 +1,6 @@
 #pragma once
 
-#include "SerialDevice.h"
+#include "AbstractArduinoDevice.h"
 #include <opencv2/core.hpp>
 
 // Admin commands
@@ -46,13 +46,12 @@
 
 
 
-class ArduinoCounter : public SerialDevice
+class ArduinoCounter : public AbstractArduinoDevice
 {
     Q_OBJECT
 
 public:
    ArduinoCounter(QObject *parent = 0, QThread *thread = 0);
-   ~ArduinoCounter(); 
 
    void Init();
 
@@ -112,22 +111,10 @@ signals:
 
 private:
 
-   bool ConnectToDevice(const QString& port);
-   void ResetDevice(const QString& port);
-   void SendCommand(char command[], float value = NAN);
+   void SetupAfterConnection();
+   void ProcessMessage(const char message, uint32_t param, QByteArray payload);
 
-   template <typename T>
-   void SendMessage(char msg, T param, bool require_connection = true);
-   void SendMessage(char msg) { SendMessage(msg, uint32_t(0)); }
-
-   QByteArray WaitForMessage(char msg, int timeout_ms = 1000);
-   QByteArray ProcessMessage(QByteArray msg);
-   QByteArray current_message;
-   qint64 bytes_left_in_message = 5;
    void MonitorCount();
-
-   QByteArray ReadBytes(int n_bytes, int timeout_ms = 10000);
-   void ReadData();
 
    bool streaming = false;
    double dwell_time_ms = 100;
@@ -149,24 +136,4 @@ private:
    int current_count = 0;
 
    QTimer* monitor_timer;
-
 };
-
-
-template <typename T>
-void ArduinoCounter::SendMessage(char msg, T param, bool require_connection)
-{
-   static_assert(sizeof(param) == 4, "Parameter size must be 4 bytes");
-
-   if (require_connection && !connected)
-      return;
-
-   QMutexLocker lk(&connection_mutex);
-
-   char* p = reinterpret_cast<char*>(&param);
-
-   serial_port->write(&msg, 1);
-   serial_port->write(p, 4);
-   serial_port->flush();
-}
-
