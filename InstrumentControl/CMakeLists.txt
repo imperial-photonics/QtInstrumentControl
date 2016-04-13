@@ -18,6 +18,7 @@ option(USE_THORLABS_APT_CONTROLLER false)
 set(CMAKE_AUTOMOC ON)
 
 set(SOURCE
+   AbstractArduinoDevice.cpp
    ArduinoCounter.cpp
    SerialDevice.cpp
    GenericNewportController.cpp
@@ -28,6 +29,7 @@ set(SOURCE
 )
 
 set(HEADERS
+   AbstractArduinoDevice.h
    ArduinoCounter.h
    PMTStatusWidget.h
    SerialDevice.h
