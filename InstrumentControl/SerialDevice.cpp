@@ -58,7 +58,8 @@ void SerialDevice::connectToDevice()
 
    // Couldn't connect, try autoconnection later
    connection_timer->start();
-   //NewMessage("Could not connect to device.");
+
+   newMessage(QString("Could not connect to device: ").append(port_description));
 }
 
 

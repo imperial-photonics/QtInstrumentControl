@@ -57,8 +57,6 @@ public:
 
    void GetCount();
 
-   bool IsConnected() { return connected; }
-
    void SetPMTEnabled(bool enabled);
 
    void SetStreaming(bool streaming);

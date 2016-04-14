@@ -146,7 +146,7 @@ void ArduinoCounter::Stop()
 
 void ArduinoCounter::SetPMTEnabled(bool enabled)
 {
-   if (!connected)
+   if (!is_connected)
    {
       emit PMTEnabled(false);
       return;

@@ -18,7 +18,6 @@ public:
    ~AbstractArduinoDevice();
 
    void init();
-   bool isConnected() { return connected; }
 
 protected:
 
@@ -29,8 +28,6 @@ protected:
    template <typename T>
    void sendMessage(char msg, T param, bool require_connection = true);
    void sendMessage(char msg) { sendMessage(msg, uint32_t(0)); }
-
-   bool connected = false;
 
 private:
 
@@ -53,7 +50,7 @@ void AbstractArduinoDevice::sendMessage(char msg, T param, bool require_connecti
 {
    static_assert(sizeof(param) == 4, "Parameter size must be 4 bytes");
 
-   if (require_connection && !connected)
+   if (require_connection && !is_connected)
       return;
 
    QMutexLocker lk(&connection_mutex);

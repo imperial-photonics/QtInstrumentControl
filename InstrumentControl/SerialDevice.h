@@ -23,6 +23,8 @@ public:
    virtual bool connectToPort(const QString& port) = 0;
    virtual void resetDevice(const QString& port) = 0;
 
+   bool isConnected() { return is_connected; }
+
 signals:
    void connected();
    void newMessage(QString const& msg);

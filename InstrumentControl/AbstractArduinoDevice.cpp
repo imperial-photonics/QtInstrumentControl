@@ -17,7 +17,7 @@ AbstractArduinoDevice::AbstractArduinoDevice(QObject *parent, QThread* thread) :
 
 void AbstractArduinoDevice::init()
 {
-   connect(this, &AbstractArduinoDevice::newMessage, [](const QString& msg) { std::cout << msg.toStdString() << "\n"; });
+    connect(this, &AbstractArduinoDevice::newMessage, [](const QString& msg) { std::cout << msg.toStdString() << "\n"; });
    SerialDevice::init();
 }
 
@@ -62,8 +62,8 @@ bool AbstractArduinoDevice::connectToPort(const QString& port)
    QByteArray response = waitForMessage(MSG_IDENTITY);
    if (response != getExpectedIdentifier())
    {
-   serial_port->close();
-   return false;
+      serial_port->close();
+      return false;
    }
    
 
@@ -104,15 +104,13 @@ QByteArray AbstractArduinoDevice::waitForMessage(char msg, int timeout_ms)
    int packet_size = 5;
    QByteArray data;
 
+
    do
    {
-      data = readBytes(5);
-
+      data = readBytes(packet_size);
       if (data.size() == packet_size)
       {
          QByteArray payload = processMessage(data);
-         //if (bytes_left_in_message > 0);
-         //data.append( ReadBytes() )
          if ((data[0] & 0x7F) == msg)
             return payload;
       }
@@ -157,10 +155,11 @@ QByteArray AbstractArduinoDevice::processMessage(QByteArray data)
    if (data[0] & 0x80) // message has payload
    {
       int total_bytes_expected = param + 5;
-      if (data.size() < total_bytes_expected)
+      bytes_left_in_message = total_bytes_expected - data.size();
+      while (data.size() < total_bytes_expected)
       {
+         data.append(readBytes(bytes_left_in_message));
          bytes_left_in_message = total_bytes_expected - data.size();
-         return payload;
       }
       payload = data.mid(5);
    }
