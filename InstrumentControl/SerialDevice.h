@@ -17,32 +17,32 @@ public:
    SerialDevice(QObject *parent = 0, QThread *thread = 0);
    virtual ~SerialDevice();
 
-   virtual void Init(); // called on startup
-   void Connect();
+   virtual void init(); // called on startup
+   void connectToDevice();
 
-   virtual bool ConnectToDevice(const QString& port) = 0;
-   virtual void ResetDevice(const QString& port) = 0;
+   virtual bool connectToPort(const QString& port) = 0;
+   virtual void resetDevice(const QString& port) = 0;
 
 signals:
-   void Connected();
-   void NewMessage(QString const& msg);
+   void connected();
+   void newMessage(QString const& msg);
 
 protected:
 
-   bool OpenSerialPort(const QString& port, QSerialPort::FlowControl flow_control, int baud_rate);
-   QString ResponseFromCommand(const QByteArray& command);
+   bool openSerialPort(const QString& port, QSerialPort::FlowControl flow_control, int baud_rate);
+   QString responseFromCommand(const QByteArray& command);
 
-   void SetConnected()
+   void setConnected()
    {
-      connected = true;
-      emit Connected();
+      is_connected = true;
+      emit connected();
    }
 
-   QByteArray ReadUntilTerminator(int timeout_ms);
-   void WriteWithTerminator(const QByteArray& command);
+   QByteArray readUntilTerminator(int timeout_ms);
+   void writeWithTerminator(const QByteArray& command);
 
-   void ErrorOccurred(QSerialPort::SerialPortError error);
-   void Disconnected();
+   void errorOccurred(QSerialPort::SerialPortError error);
+   void disconnected();
 
 
    QString port_description;
@@ -52,7 +52,7 @@ protected:
 
    static QMutex port_detection_mutex;
 
-   bool connected;
+   bool is_connected;
    bool shutdown;
 
    QByteArray terminator = "\r\n";

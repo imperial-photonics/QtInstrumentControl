@@ -12,17 +12,16 @@ ArduinoCounter::ArduinoCounter(QObject *parent, QThread* thread) :
    AbstractArduinoDevice(parent, thread)
    
 {
-   port_description = "Arduino Due";
-   StartThread();
+   startThread();
 }
 
-void ArduinoCounter::Init()
+void ArduinoCounter::init()
 {
    monitor_timer = new QTimer(this);
    connect(monitor_timer, &QTimer::timeout, this, &ArduinoCounter::MonitorCount);
    monitor_timer->start(50);
 
-   AbstractArduinoDevice::Init();
+   AbstractArduinoDevice::init();
 }
 
 void ArduinoCounter::MonitorCount()
@@ -47,7 +46,7 @@ void ArduinoCounter::SetStreaming(bool streaming_)
 {
    streaming = streaming_;
    uint32_t mode = streaming ? MODE_STREAMING : MODE_ON_DEMAND;
-   SendMessage(MSG_SET_MODE, mode);
+   sendMessage(MSG_SET_MODE, mode);
 }
 
 void ArduinoCounter::SetDwellTime(double dwell_time_ms_)
@@ -55,94 +54,94 @@ void ArduinoCounter::SetDwellTime(double dwell_time_ms_)
    dwell_time_ms = dwell_time_ms_;
 
    float dwell_time_us = dwell_time_ms * 1000.0;
-   SendMessage(MSG_SET_DWELL_TIME, dwell_time_us);
+   sendMessage(MSG_SET_DWELL_TIME, dwell_time_us);
 }
 
 void ArduinoCounter::SetUseExternalPixelClock(bool use_external_clock_)
 {
    use_external_pixel_clock = use_external_clock_;
    uint32_t source = use_external_pixel_clock ? CLOCK_EXTERNAL : CLOCK_INTERNAL;
-   SendMessage(MSG_SET_PIXEL_CLOCK_SOURCE, source);
+   sendMessage(MSG_SET_PIXEL_CLOCK_SOURCE, source);
 }
 
 void ArduinoCounter::SetUseExternalLineClock(bool use_external_clock_)
 {
    use_external_line_clock = use_external_clock_;
    uint32_t source = use_external_line_clock ? CLOCK_EXTERNAL : CLOCK_INTERNAL;
-   SendMessage(MSG_SET_LINE_CLOCK_SOURCE, source);
+   sendMessage(MSG_SET_LINE_CLOCK_SOURCE, source);
 }
 
 void ArduinoCounter::SetTriggerDivisor(int trigger_divisor_)
 {
    trigger_divisor = trigger_divisor_;
-   SendMessage(MSG_SET_TRIGGER_CLOCK_DIVISOR, trigger_divisor);
+   sendMessage(MSG_SET_TRIGGER_CLOCK_DIVISOR, trigger_divisor);
 }
 
 void ArduinoCounter::SetExternalClockDivisor(int ext_clock_divisor_)
 {
    ext_clock_divisor = ext_clock_divisor_;
-   SendMessage(MSG_SET_EXTERNAL_CLOCK_DIVISOR, ext_clock_divisor);
+   sendMessage(MSG_SET_EXTERNAL_CLOCK_DIVISOR, ext_clock_divisor);
 
 }
 
 void ArduinoCounter::SetPixelsPerLine(int pixels_per_line_)
 {
    pixels_per_line = pixels_per_line_;
-   SendMessage(MSG_SET_NUM_PIXEL, (quint32) pixels_per_line);
+   sendMessage(MSG_SET_NUM_PIXEL, (quint32) pixels_per_line);
 }
 
 void ArduinoCounter::SetGalvoStep(int galvo_step_)
 {
    galvo_step = galvo_step_;
-   SendMessage(MSG_SET_GALVO_STEP, (quint32) galvo_step);
+   sendMessage(MSG_SET_GALVO_STEP, (quint32) galvo_step);
 }
 
 void ArduinoCounter::SetGalvoOffset(int galvo_offset_)
 {
    galvo_offset = galvo_offset_;
-   SendMessage(MSG_SET_GALVO_OFFSET, galvo_offset);
+   sendMessage(MSG_SET_GALVO_OFFSET, galvo_offset);
    emit GalvoOffsetChanged(galvo_offset);
 }
 
 void ArduinoCounter::SetNumFlybackSteps(int n_flyback_steps_)
 {
    n_flyback_steps = n_flyback_steps_;
-   SendMessage(MSG_SET_NUM_FLYBACK_STEPS, n_flyback_steps);
+   sendMessage(MSG_SET_NUM_FLYBACK_STEPS, n_flyback_steps);
 }
 
 void ArduinoCounter::SetUseDiagnosticCounts(bool use_diagnostic_counts_)
 {
    use_diagnostic_counts = use_diagnostic_counts_;
-   SendMessage(MSG_USE_DIAGNOSTIC_COUNTS, (int)use_diagnostic_counts);
+   sendMessage(MSG_USE_DIAGNOSTIC_COUNTS, (int)use_diagnostic_counts);
 }
 
 void ArduinoCounter::SetTriggerDelay(double trigger_delay_us_)
 {
    trigger_delay_us = trigger_delay_us_;
-   SendMessage(MSG_SET_TRIGGER_DELAY, (float)trigger_delay_us);
+   sendMessage(MSG_SET_TRIGGER_DELAY, (float)trigger_delay_us);
 }
 
 void ArduinoCounter::SetTriggerDuration(double trigger_duration_us_)
 {
    trigger_delay_us = trigger_duration_us_;
-   SendMessage(MSG_SET_TRIGGER_DURATION, (float)trigger_duration_us_);
+   sendMessage(MSG_SET_TRIGGER_DURATION, (float)trigger_duration_us_);
 }
 
 
 void ArduinoCounter::StartLine()
 {
-   SendMessage(MSG_START_LINE);
+   sendMessage(MSG_START_LINE);
 }
 
 void ArduinoCounter::PrimeLine()
 {
-   SendMessage(MSG_PRIME_LINE);
+   sendMessage(MSG_PRIME_LINE);
 }
 
 
 void ArduinoCounter::Stop()
 {
-   SendMessage(MSG_STOP);
+   sendMessage(MSG_STOP);
 }
 
 void ArduinoCounter::SetPMTEnabled(bool enabled)
@@ -161,7 +160,7 @@ void ArduinoCounter::SetPMTEnabled(bool enabled)
 
 void ArduinoCounter::GetCount()
 {
-   SendMessage(MSG_TRIGGER);
+   sendMessage(MSG_TRIGGER);
 }
 
 
@@ -191,7 +190,7 @@ void ArduinoCounter::ProcessMessage(const char msg, uint32_t param, QByteArray p
       } break;
       case MSG_INFO:
       {
-         emit NewMessage(QString("Arduino Message: %1\n").arg(param));
+         emit newMessage(QString("Arduino Message: %1\n").arg(param));
       }
    }
 }

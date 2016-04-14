@@ -16,19 +16,19 @@ public:
       ThreadedObject(parent, thread)
    {}
 
-   virtual cv::Mat GetImage() = 0;
+   virtual cv::Mat getImage() = 0;
 
    // override to return an unsafe reference to the current image
    // any calling function should use it quickly!
-   virtual cv::Mat GetImageUnsafe() = 0;
+   virtual cv::Mat getImageUnsafe() = 0;
 
-   virtual cv::Mat GetNextImage() { return GetImage(); };
+   virtual cv::Mat getNextImage() { return getImage(); };
 
-   virtual void SetImageProductionStatus(bool producing_images_) { producing_images = producing_images_; };
-   virtual bool GetImageProductionStatus() { return producing_images; }
+   virtual void setImageProductionStatus(bool producing_images_) { producing_images = producing_images_; };
+   virtual bool getImageProductionStatus() { return producing_images; }
 
 signals:
-   void NewImage();
+   void newImage();
 
 protected:
    bool producing_images = true;

@@ -27,14 +27,14 @@ ThreadedObject::ThreadedObject(QObject* parent, QThread* ex_thread)
    //emit Started();
 }
 
-void ThreadedObject::StartInit()
+void ThreadedObject::startInit()
 {
    QMutexLocker lk(&init_mutex);
    this->init();
    init_cv.wakeAll();
 }
 
-void ThreadedObject::StartThread()
+void ThreadedObject::startThread()
 {
    thread->setObjectName(objectName());
    

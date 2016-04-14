@@ -53,7 +53,7 @@ class ArduinoCounter : public AbstractArduinoDevice
 public:
    ArduinoCounter(QObject *parent = 0, QThread *thread = 0);
 
-   void Init();
+   void init();
 
    void GetCount();
 

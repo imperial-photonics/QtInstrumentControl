@@ -10,23 +10,20 @@ class ThreadedObject : public QObject
    Q_OBJECT
 public:
    ThreadedObject(QObject* parent = nullptr, QThread* ex_thread = nullptr);
-
-   void StartThread();
-
-   QThread* GetThread();
-
-   void ParentDestroyed();
-
    virtual ~ThreadedObject();
+
+   void startThread();
+   QThread* getThread();
+   void parentDestroyed();
 
    virtual void init() = 0;
 
 signals:
-   void Started();
+   void started();
 
 protected:
 
-   Q_INVOKABLE void StartInit();
+   Q_INVOKABLE void startInit();
 
    QThread* thread;
    bool private_thread;

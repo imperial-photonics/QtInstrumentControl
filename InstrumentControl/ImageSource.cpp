@@ -10,6 +10,6 @@ void ImageSource::SaveImage()
    if (filename.isEmpty())
       return;
 
-   cv::imwrite(filename.toStdString(), GetImage());
+   cv::imwrite(filename.toStdString(), getImage());
 }
 */

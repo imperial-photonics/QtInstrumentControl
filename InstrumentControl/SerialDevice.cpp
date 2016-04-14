@@ -13,7 +13,7 @@ QMutex SerialDevice::port_detection_mutex;
 SerialDevice::SerialDevice(QObject *parent, QThread *thread) :
 ThreadedObject(parent, thread),
 connection_mutex(QMutex::Recursive),
-connected(false),
+is_connected(false),
 shutdown(false)
 {
 }
@@ -23,19 +23,19 @@ SerialDevice::~SerialDevice()
    shutdown = true;
 }
 
-void SerialDevice::Init()
+void SerialDevice::init()
 {
    serial_port = new QSerialPort(this);
    // Setup reconnection timer
    connection_timer = new QTimer(this);
    connection_timer->setInterval(2000);
    connection_timer->setSingleShot(true);
-   connect(connection_timer, &QTimer::timeout, this, &SerialDevice::Connect);
+   connect(connection_timer, &QTimer::timeout, this, &SerialDevice::connectToDevice);
 
-   Connect();
+   connectToDevice();
 }
 
-void SerialDevice::Connect()
+void SerialDevice::connectToDevice()
 {
    QMutexLocker lk(&port_detection_mutex);
 
@@ -49,7 +49,7 @@ void SerialDevice::Connect()
       if (!port.isBusy() && (port_description.isEmpty() || port.description() == port_description))
       {
          // Try to connect, return if we succesfully connected
-         if (ConnectToDevice(port.portName()))
+         if (connectToPort(port.portName()))
             return;
          //else
          //resetArduino(port.portName());
@@ -63,7 +63,7 @@ void SerialDevice::Connect()
 
 
 
-bool SerialDevice::OpenSerialPort(const QString& port, QSerialPort::FlowControl flow_control, int baud_rate)
+bool SerialDevice::openSerialPort(const QString& port, QSerialPort::FlowControl flow_control, int baud_rate)
 {
    QMutexLocker lk(&connection_mutex);
 
@@ -81,8 +81,8 @@ bool SerialDevice::OpenSerialPort(const QString& port, QSerialPort::FlowControl 
    if (serial_port->open(QIODevice::ReadWrite) == false)
       return false;
 
-   connect(serial_port, static_cast<void (QSerialPort::*)(QSerialPort::SerialPortError)>(&QSerialPort::error), this, &SerialDevice::ErrorOccurred);
-   connect(serial_port, &QSerialPort::aboutToClose, this, &SerialDevice::Disconnected);
+   connect(serial_port, static_cast<void (QSerialPort::*)(QSerialPort::SerialPortError)>(&QSerialPort::error), this, &SerialDevice::errorOccurred);
+   connect(serial_port, &QSerialPort::aboutToClose, this, &SerialDevice::disconnected);
 
    return true;
 }
@@ -90,15 +90,15 @@ bool SerialDevice::OpenSerialPort(const QString& port, QSerialPort::FlowControl 
 /*
 Get a response from the device to a command string.
 */
-QString SerialDevice::ResponseFromCommand(const QByteArray& command)
+QString SerialDevice::responseFromCommand(const QByteArray& command)
 {
    QMutexLocker lk(&connection_mutex);
 
-   WriteWithTerminator(command);
-   return ReadUntilTerminator(1000);
+   writeWithTerminator(command);
+   return readUntilTerminator(1000);
 }
 
-void SerialDevice::WriteWithTerminator(const QByteArray& command)
+void SerialDevice::writeWithTerminator(const QByteArray& command)
 {
    serial_port->write(command);
    serial_port->write(terminator);
@@ -109,7 +109,7 @@ void SerialDevice::WriteWithTerminator(const QByteArray& command)
    //std::cout << "Command: " << command.constData() << "\n";
 }
 
-QByteArray SerialDevice::ReadUntilTerminator(int timeout_ms)
+QByteArray SerialDevice::readUntilTerminator(int timeout_ms)
 {
    QByteArray data;
    bool finished = false;
@@ -149,7 +149,7 @@ QByteArray SerialDevice::ReadUntilTerminator(int timeout_ms)
    return data;
 }
 
-void SerialDevice::ErrorOccurred(QSerialPort::SerialPortError error)
+void SerialDevice::errorOccurred(QSerialPort::SerialPortError error)
 {
    QMutexLocker lk(&connection_mutex);
 
@@ -165,15 +165,15 @@ void SerialDevice::ErrorOccurred(QSerialPort::SerialPortError error)
       if (err == QSerialPort::WriteError || err == QSerialPort::DeviceNotFoundError)
       {
          serial_port->close();
-         connected = false;
+         is_connected = false;
          connection_timer->start();
       }
 
 }
 
-void SerialDevice::Disconnected()
+void SerialDevice::disconnected()
 {
    // Make sure we don't try to keep writing when disconnected.
-   emit NewMessage("Device disconnected.");
-   connected = false;
+   emit newMessage("Device disconnected.");
+   is_connected = false;
 }

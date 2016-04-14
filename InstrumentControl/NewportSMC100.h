@@ -37,7 +37,7 @@ public:
       baud = QSerialPort::Baud57600;
       units = "mm";
 
-      StartThread();
+      startThread();
    }
 
 protected:
@@ -45,7 +45,7 @@ protected:
 
    QString SendCommand(int axis, QByteArray command, bool require_connection = true)
    {
-      if (require_connection && !connected)
+      if (require_connection && !is_connected)
          return 0;
 
       QMutexLocker lk(&connection_mutex);
@@ -55,8 +55,8 @@ protected:
 
       QByteArray response;
       serial_port->readAll();
-      WriteWithTerminator(b);
-      response = ReadUntilTerminator(1000);
+      writeWithTerminator(b);
+      response = readUntilTerminator(1000);
       
       // Remove question mark from end, isn't returned on SMC100
       if ( b.endsWith("?"))
@@ -75,7 +75,7 @@ protected:
 
    void QueryError()
    {
-      if (!connected)
+      if (!is_connected)
          return;
 
       QMutexLocker lk(&connection_mutex);
@@ -93,7 +93,7 @@ protected:
          QString error_message = SendCommand(controller_index, QByteArray("TB").append(error));
          QString message = error_message.right(response.size() - 5);
 
-         NewMessage(message);
+         newMessage(message);
       }
    }
 

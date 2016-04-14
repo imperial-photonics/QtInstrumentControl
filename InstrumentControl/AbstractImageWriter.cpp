@@ -7,7 +7,7 @@ AbstractImageWriter::AbstractImageWriter(QObject* parent, QThread* thread) :
    file_root = "image ";
    active = false;
 
-   StartThread();
+   startThread();
 };
 
 void AbstractImageWriter::SetFilenameRoot(const QString& file_root_)

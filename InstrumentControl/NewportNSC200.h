@@ -18,14 +18,14 @@ public:
       if (stage_type == "NSR1")
          units = "deg";
 
-      StartThread();
+      startThread();
    }
 
 protected:
    
    QString SendCommand(int axis, QByteArray command, bool require_connection = true)
    {
-      if (require_connection && !connected)
+      if (require_connection && !is_connected)
          return 0;
 
       QMutexLocker lk(&connection_mutex);
@@ -34,8 +34,8 @@ protected:
       QByteArray b = QByteArray::number(axis).append(command).append("?");
 
       serial_port->readAll();
-      WriteWithTerminator(b);
-      QByteArray response = ReadUntilTerminator(1000);
+      writeWithTerminator(b);
+      QByteArray response = readUntilTerminator(1000);
 
       b.append(" ");
 

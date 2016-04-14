@@ -222,7 +222,7 @@ void ImageRenderWidget::GetImageFromSource()
    if (source == nullptr)
       return;
    
-   cv::Mat im = source->GetImage();
+   cv::Mat im = source->getImage();
    //SetImage(im);
 
 }

@@ -15,9 +15,9 @@ public:
 
    GenericNewportController(const QString& controller_type, const QString& stage_type = "", QObject* parent = 0);
 
-   void Init();
+   void init();
 
-   bool ConnectToDevice(const QString& port);
+   bool connectToPort(const QString& port);
    void ResetDevice(const QString& port) {};
 
    double GetCurrentPosition();
@@ -83,7 +83,7 @@ protected:
 template <class T>
 void GenericNewportController::SendCommand(int axis, QByteArray command, T value)
 {
-   if (!connected)
+   if (!is_connected)
       return;
 
    QMutexLocker lk(&connection_mutex);

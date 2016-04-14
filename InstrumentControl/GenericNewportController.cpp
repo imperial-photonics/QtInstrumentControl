@@ -13,9 +13,9 @@ controller_type(controller_type)
 {
 }
 
-void GenericNewportController::Init()
+void GenericNewportController::init()
 {
-   SerialDevice::Init();
+   SerialDevice::init();
 
    position_timer = new QTimer(this);
    position_timer->setInterval(500);
@@ -24,16 +24,16 @@ void GenericNewportController::Init()
    position_timer->start();
 }
 
-bool GenericNewportController::ConnectToDevice(const QString& port)
+bool GenericNewportController::connectToPort(const QString& port)
 {
    QMutexLocker lk(&connection_mutex);
 
    QString m = QString("Trying to connect to Newport stage on port: %1").arg(port);
    std::cout << m.toStdString() << "\n";
-   NewMessage(m);
+   newMessage(m);
 
    // Try and open serial port
-   if (!OpenSerialPort(port, QSerialPort::SoftwareControl, baud))
+   if (!openSerialPort(port, QSerialPort::SoftwareControl, baud))
       return false;
 
    // Check that device identifies correctly
@@ -55,19 +55,19 @@ bool GenericNewportController::ConnectToDevice(const QString& port)
       }
    }
 
-   connected = true;
+   is_connected = true;
 
    GetControllerState();
 
    Sync();
 
-   emit NewMessage("Connected to Newport Stage.");
+   emit newMessage("Connected to Newport Stage.");
    return true;
 }
 
 void GenericNewportController::UpdateCurrentPosition()
 {
-   if (connected)
+   if (is_connected)
    {
       double current_position = GetCurrentPosition();
       emit CurrentPositionChanged(current_position);
@@ -135,7 +135,7 @@ void GenericNewportController::StopMotion()
 
 void GenericNewportController::Home()
 {
-   if (connected)
+   if (is_connected)
    {
       SendCommand(controller_index, "RS"); // reset;
       QThread::sleep(10); // wait for reset
