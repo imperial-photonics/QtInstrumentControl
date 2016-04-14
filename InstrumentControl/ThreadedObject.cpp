@@ -23,7 +23,7 @@ ThreadedObject::ThreadedObject(QObject* parent, QThread* ex_thread)
       connect(this, &QObject::destroyed, thread, &QThread::deleteLater, Qt::DirectConnection);
    }
 
-   //connect(this, &ThreadedObject::Started, this, &ThreadedObject::StartInit, Qt::QueuedConnection);
+   //connect(this, &ThreadedObject::Started, this, &ThreadedObject::startInit, Qt::QueuedConnection);
    //emit Started();
 }
 
@@ -41,7 +41,7 @@ void ThreadedObject::startThread()
    QMutexLocker lk(&init_mutex);
 
    // Call Init function
-   QMetaObject::invokeMethod(this, "StartInit", Qt::QueuedConnection);
+   QMetaObject::invokeMethod(this, "startInit", Qt::QueuedConnection);
    init_cv.wait(&init_mutex);
 }
 

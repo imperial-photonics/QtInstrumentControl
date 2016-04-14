@@ -90,7 +90,7 @@ public:
          QThread::msleep(500);
          // slm->WaitForNextUpdate(); // TODO
 
-         cv::Mat m = image_sources[image_source_index]->GetNextImage();
+         cv::Mat m = image_sources[image_source_index]->getNextImage();
          render_widget->AddImage(m, QString("%1=%2%3").arg(value_name).arg(position, 0, 'f', 3).arg(unit));
 
          emit ProgressChanged((100 * (i + 1)) / n);
