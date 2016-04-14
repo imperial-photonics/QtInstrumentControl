@@ -60,7 +60,7 @@ bool AbstractArduinoDevice::connectToPort(const QString& port)
    
    sendMessage(MSG_IDENTIFY, uint32_t(0), false);
    QByteArray response = waitForMessage(MSG_IDENTITY);
-   if (response != "Photon Counter")
+   if (response != getExpectedIdentifier())
    {
    serial_port->close();
    return false;

@@ -113,7 +113,7 @@ private:
 
    void SetupAfterConnection();
    void ProcessMessage(const char message, uint32_t param, QByteArray payload);
-
+   const QString getExpectedIdentifier() { return "Photon Counter"; }
    void MonitorCount();
 
    bool streaming = false;

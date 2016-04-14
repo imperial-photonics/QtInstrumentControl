@@ -24,9 +24,7 @@ protected:
 
    virtual void processMessage(const char message, uint32_t param, QByteArray& payload) = 0;
    virtual void setupAfterConnection() {};
-
-   bool connectToPort(const QString& port);
-   void resetDevice(const QString& port);
+   virtual const QString getExpectedIdentifier() = 0;
 
    template <typename T>
    void sendMessage(char msg, T param, bool require_connection = true);
@@ -35,6 +33,9 @@ protected:
    bool connected = false;
 
 private:
+
+   bool connectToPort(const QString& port);
+   void resetDevice(const QString& port);
 
    QByteArray readBytes(int n_bytes, int timeout_ms = 10000);
    void readData();
