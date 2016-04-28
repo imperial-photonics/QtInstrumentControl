@@ -287,28 +287,29 @@ void ParameterWidget::widgetUpdated(QVariant value)
 
 void ParameterWidget::sendValueToCamera()
 {
-   QMutexLocker lk(mutex);
-   if (!camera->isParameterWritable(control)) return;
-
-   try
    {
-      std::cout << "Setting parameter: " << control.toStdString() << " = " << proposed_value.toString().toStdString() << "\n";
-      camera->setParameter(control, type, proposed_value);
-   }
-   catch (std::exception e)
-   {
-      // In case of error setting value get current value from camera
-      std::cout << "Error setting parameter: " << e.what() << "\n";
-      setWidgetValue();
-   }
+      QMutexLocker lk(mutex);
+      if (!camera->isParameterWritable(control)) return;
 
-   QVariant actual_value = camera->getParameter(control, type);
-   settings->setValue(control, actual_value);
+      try
+      {
+         std::cout << "Setting parameter: " << control.toStdString() << " = " << proposed_value.toString().toStdString() << "\n";
+         camera->setParameter(control, type, proposed_value);
+      }
+      catch (std::exception e)
+      {
+         // In case of error setting value get current value from camera
+         std::cout << "Error setting parameter: " << e.what() << "\n";
+         setWidgetValue();
+      }
 
-   // restart update timer
-   if (use_timer && !timer->isActive())
-      timer->start();
-   
+      QVariant actual_value = camera->getParameter(control, type);
+      settings->setValue(control, actual_value);
+
+      // restart update timer
+      if (use_timer && !timer->isActive())
+         timer->start();
+   }
    emit valueChanged();
 }
 
