@@ -13,7 +13,7 @@ public:
    virtual ~ThreadedObject();
 
    void startThread();
-   QThread* getThread();
+   const QThread* getThread() { return thread; };
    void parentDestroyed();
 
    virtual void init() = 0;

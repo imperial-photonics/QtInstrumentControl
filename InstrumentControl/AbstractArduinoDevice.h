@@ -4,6 +4,7 @@
 
 #include "SerialDevice.h"
 #include <opencv2/core.hpp>
+#include <QVariant>
 
 // Admin commands
 #define MSG_IDENTIFY 0x49 // 'I'
@@ -25,9 +26,8 @@ protected:
    virtual void setupAfterConnection() {};
    virtual const QString getExpectedIdentifier() = 0;
 
-   template <typename T>
-   void sendMessage(char msg, T param, bool require_connection = true);
-   void sendMessage(char msg) { sendMessage(msg, uint32_t(0)); }
+   Q_INVOKABLE void sendMessage(char msg, QVariant param, bool require_connection = true);
+   void sendMessage(char msg) { sendMessage(msg, 0); }
 
 private:
 
@@ -45,20 +45,4 @@ private:
 };
 
 
-template <typename T>
-void AbstractArduinoDevice::sendMessage(char msg, T param, bool require_connection)
-{
-   static_assert(sizeof(param) == 4, "Parameter size must be 4 bytes");
-
-   if (require_connection && !is_connected)
-      return;
-
-   QMutexLocker lk(&connection_mutex);
-
-   char* p = reinterpret_cast<char*>(&param);
-
-   serial_port->write(&msg, 1);
-   serial_port->write(p, 4);
-   serial_port->flush();
-}
 

@@ -77,6 +77,45 @@ bool AbstractArduinoDevice::connectToPort(const QString& port)
 
 }
 
+void AbstractArduinoDevice::sendMessage(char msg, QVariant param, bool require_connection)
+{
+   if (QThread::currentThread() != getThread())
+   {
+      QMetaObject::invokeMethod(this, "sendMessage", Q_ARG(char, msg), Q_ARG(QVariant, param), Q_ARG(bool, require_connection));
+      return;
+   }
+
+
+   if (require_connection && !is_connected)
+      return;
+
+   QMutexLocker lk(&connection_mutex);
+
+   char* p;
+   if (param.type() == QVariant::Type::Double)
+   {
+      float q = param.toFloat();
+      p = reinterpret_cast<char*>(&q);
+   }
+   else if (param.type() == QVariant::Type::Int || param.type() == QVariant::Type::Bool)
+   {
+      int32_t q = param.toInt();
+      p = reinterpret_cast<char*>(&q);
+   }
+   else if (param.type() == QVariant::Type::UInt)
+   {
+      uint32_t q = param.toUInt();
+      p = reinterpret_cast<char*>(&q);
+   }
+   else
+   {
+      throw std::runtime_error("Unexpected type send to Arduino");
+   }
+
+   serial_port->write(&msg, 1);
+   serial_port->write(p, 4);
+   serial_port->flush();
+}
 
 QByteArray AbstractArduinoDevice::readBytes(int n_bytes, int timeout_ms)
 {

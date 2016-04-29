@@ -80,7 +80,11 @@ bool SerialDevice::openSerialPort(const QString& port, QSerialPort::FlowControl 
    serial_port->setReadBufferSize(0);
 
    if (serial_port->open(QIODevice::ReadWrite) == false)
+   {
+      QString error = serial_port->errorString();
+      std::cout << error.toStdString() << "\n";
       return false;
+   }
 
    connect(serial_port, static_cast<void (QSerialPort::*)(QSerialPort::SerialPortError)>(&QSerialPort::error), this, &SerialDevice::errorOccurred);
    connect(serial_port, &QSerialPort::aboutToClose, this, &SerialDevice::disconnected);
