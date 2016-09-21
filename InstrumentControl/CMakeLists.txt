@@ -1,15 +1,8 @@
-
-
-
-cmake_minimum_required(VERSION 3.0)
+cmake_minimum_required(VERSION 3.3)
 
 project(InstrumentControl)
 
-cmake_policy(SET CMP0020 NEW)
-cmake_policy(SET CMP0043 NEW)
-
 find_package(OpenCV REQUIRED core)
-
 find_package(Qt5Widgets REQUIRED)
 find_package(Qt5SerialPort REQUIRED)
 
