@@ -242,6 +242,14 @@ void ImageRenderWidget::SetImage(cv::Mat& im)
    Redraw();
 }
 
+void ImageRenderWidget::ClearImages()
+{
+   cv_image.clear();
+   cur_index = 0;
+   ImageIndexChanged(0);
+   MaxImageIndexChanged(0);
+}
+
 /*
    Add an image to the display and show the new image
 */

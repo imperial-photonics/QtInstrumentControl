@@ -30,6 +30,7 @@ public:
    void SetBitShift(int bit_shift_);
    void AddImage(cv::Mat image, QString label = QString(""));
    void SetImage(cv::Mat& image);
+   void ClearImages();
 
    void SelectROI(bool checked);
    void ResetROI() { use_roi = false; }
