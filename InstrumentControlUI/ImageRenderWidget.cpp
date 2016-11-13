@@ -26,6 +26,13 @@ QImage CopyToQImage(cv::Mat& cv_image, int bit_shift)
 
    QImage q_image(size.width, size.height, format);
 
+   if (depth == CV_32F)
+   {
+      double mn, mx;
+      cv::minMaxIdx(cv_image, &mn, &mx);
+      cv_image /= (1.1 * mx);
+   }
+
    for (int y = 0; y < size.height; y++)
    {
       unsigned char* image_ptr = q_image.scanLine(y);
@@ -54,7 +61,7 @@ QImage CopyToQImage(cv::Mat& cv_image, int bit_shift)
       else if (depth == CV_32F)
       {
          float* data_ptr = reinterpret_cast<float*>(cv_image.row(y).data);
-         for (int x=0; x < size.width; x++)
+         for (int x = 0; x < size.width; x++)
             image_ptr[x] = 255 * data_ptr[x];
       }
    }
@@ -377,11 +384,12 @@ void ImageRenderWidget::paintEvent(QPaintEvent *event)
 
 void ImageRenderWidget::CreateColorMap()
 {
-   colors.reserve(255);
-
-   for (int i = 0; i < 255; i++)
+   colors.clear();
+   colors.reserve(256);
+   for (int i = 0; i < 256; i++)
    {
-      QColor c(i, i, i);
+      int ii = i;
+      QColor c(ii, ii, ii);
       colors.push_back(c.rgb());
    }
 }
