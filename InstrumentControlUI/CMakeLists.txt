@@ -7,7 +7,8 @@ find_package(OpenCV REQUIRED core highgui)
 find_package(Qt5Widgets REQUIRED)
 
 qt5_wrap_ui(UI_HEADERS ImageRenderWindow.ui
-                       ImageSeriesControl.ui)
+                       ImageSeriesControl.ui
+                       TaskProgressWidget.ui)
 
 #qt5_add_resources(UI_RESOURCES PuppetMasterResources.qrc)
 
@@ -16,6 +17,7 @@ set(CMAKE_AUTOMOC ON)
 set(SOURCE
    ImageRenderWidget.cpp
    ParameterWidget.cpp
+   TaskProgress.cpp
 )
 
 
@@ -27,6 +29,8 @@ set(HEADERS
    ImageSeriesScanner.h
    ParameterWidget.h
    ConstrainedMdiSubWindow.h
+   TaskProgress.h
+   TaskProgressWidget.h
 )
 
 # manually add include directories since we're not linking libraries in
