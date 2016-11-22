@@ -30,7 +30,7 @@ public:
       connect(task.get(), &TaskProgress::taskFinished, [&]() { deleteLater(); });
       connect(task.get(), &TaskProgress::progressUpdatedPercentage, progress_bar, &QProgressBar::setValue);
       connect(cancel_button, &QPushButton::pressed, task.get(), &TaskProgress::requestCancel);
-      connect(cancel_button, &QPushButton::pressed, cancel_button, &QPushButton::setDisabled);
+     // connect(cancel_button, &QPushButton::pressed, cancel_button, &QPushButton::setDisabled);
    }
 
 protected:
