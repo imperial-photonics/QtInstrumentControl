@@ -420,6 +420,8 @@ void ImageRenderWidget::SaveImage(QString filename)
          QString fsub = QString(" %1.tif").arg(image_labels[i]);
          fname.replace(".tif", fsub);
       }
+#ifndef SUPPRESS_OPENCV_HIGHGUI
       cv::imwrite(fname.toStdString(), cv_image[i]);
+#endif
    }
 }
