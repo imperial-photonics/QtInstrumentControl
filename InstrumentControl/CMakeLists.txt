@@ -6,7 +6,7 @@ find_package(OpenCV REQUIRED core)
 find_package(Qt5Widgets REQUIRED)
 find_package(Qt5SerialPort REQUIRED)
 
-option(USE_THORLABS_APT_CONTROLLER false)
+option(USE_THORLABS_APT_CONTROLLER OFF)
 
 set(CMAKE_AUTOMOC ON)
 
@@ -38,6 +38,7 @@ set(HEADERS
 if(USE_THORLABS_APT_CONTROLLER)
    set(SOURCE ${SOURCE} ThorlabsAPTController.cpp)
    set(HEADERS ${HEADERS} FTD2XX.h ThorlabsAPTController.h)
+   set(APT_LIBS ${CMAKE_CURRENT_SOURCE_DIR}/ftd2xx.lib)
 endif()
 
 # manually add include directories since we're not linking libraries in
@@ -47,4 +48,4 @@ include_directories(${Qt5Widgets_INCLUDE_DIRS} ${Qt5SerialPort_INCLUDE_DIRS} ${O
 add_library(InstrumentControl OBJECT ${SOURCE} ${HEADERS} ${UI_HEADERS})
 
 set(InstrumentControl_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR} PARENT_SCOPE)
-set(InstrumentControl_LIBRARIES ${CMAKE_CURRENT_SOURCE_DIR}/ftd2xx.lib ${OpenCV_LIBS} PARENT_SCOPE)
+set(InstrumentControl_LIBRARIES ${APT_LIBS} ${OpenCV_LIBS} PARENT_SCOPE)
