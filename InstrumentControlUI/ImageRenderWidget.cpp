@@ -26,11 +26,12 @@ QImage CopyToQImage(cv::Mat& cv_image, int bit_shift)
 
    QImage q_image(size.width, size.height, format);
 
+   double scale = 255;
    if (depth == CV_32F)
    {
       double mn, mx;
       cv::minMaxIdx(cv_image, &mn, &mx);
-      cv_image /= (1.1 * mx);
+      scale = 255 / (1.1 * mx);
    }
 
    for (int y = 0; y < size.height; y++)
@@ -62,7 +63,7 @@ QImage CopyToQImage(cv::Mat& cv_image, int bit_shift)
       {
          float* data_ptr = reinterpret_cast<float*>(cv_image.row(y).data);
          for (int x = 0; x < size.width; x++)
-            image_ptr[x] = 255 * data_ptr[x];
+            image_ptr[x] = data_ptr[x] * scale;
       }
    }
 
