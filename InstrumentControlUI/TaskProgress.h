@@ -45,9 +45,15 @@ public:
       cancel_requested = true;
    }
 
+   void setTaskName(const QString& task_name_)
+   {
+      task_name = task_name_;
+      emit taskNameChanged(task_name);
+   }
+
    bool wasCancelRequested() { return cancel_requested; }
 
-   bool isIndeterminate() { return n_steps == 0; }
+   bool isIndeterminate() { return (n_steps == 0) && (progress == 0); }
 
    double getProgress() { return progress; }
    bool isFinished() { return finished; }
@@ -60,6 +66,7 @@ signals:
    void progressUpdatedPercentage(int progress); // for easy connection to progressbar
    void taskFinished();
    void cancelRequested();
+   void taskNameChanged(const QString& task_name);
 
 private:
 

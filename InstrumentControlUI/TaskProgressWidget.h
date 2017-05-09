@@ -25,12 +25,19 @@ public:
 
       label->setText(task->getName());
       if (!task->isIndeterminate())
-         progress_bar->setMaximum(100);
+         setProgressBarDeterminate();
       
       connect(task.get(), &TaskProgress::taskFinished, [&]() { deleteLater(); });
       connect(task.get(), &TaskProgress::progressUpdatedPercentage, progress_bar, &QProgressBar::setValue);
+      connect(task.get(), &TaskProgress::progressUpdatedPercentage, this, &TaskProgressWidget::setProgressBarDeterminate);
+      connect(task.get(), &TaskProgress::taskNameChanged, label, &QLabel::setText);
       connect(cancel_button, &QPushButton::pressed, task.get(), &TaskProgress::requestCancel);
      // connect(cancel_button, &QPushButton::pressed, cancel_button, &QPushButton::setDisabled);
+   }
+
+   void setProgressBarDeterminate()
+   {
+      progress_bar->setMaximum(100);
    }
 
 protected:
