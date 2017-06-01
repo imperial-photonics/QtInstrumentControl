@@ -27,9 +27,6 @@ public:
       progress = progress_;
       emit progressUpdated(progress);
       emit progressUpdatedPercentage(progress * 100);
-
-      if (progress == 1.0)
-         setFinished();
    }
 
    void setFinished()
