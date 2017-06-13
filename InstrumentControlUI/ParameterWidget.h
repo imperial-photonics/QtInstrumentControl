@@ -8,7 +8,7 @@
 #include <QFormLayout>
 #include <QLabel>
 #include <QWindow>
-#include <QPushbutton>
+#include <QPushButton>
 #include <QTimer>
 #include <QPair>
 #include <QList>
