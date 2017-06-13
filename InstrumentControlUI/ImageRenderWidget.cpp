@@ -144,8 +144,8 @@ void ImageRenderWidget::EnforceAspectRatio(QSize old_size)
    }
    else if (maximumWidth() < QWIDGETSIZE_MAX)
    {
-         setMaximumWidth(maximumWidth() + 5);
-         emit ConstrainWidth(maximumWidth());
+      setMaximumWidth(maximumWidth() + 5);
+      emit ConstrainWidth(maximumWidth());
    }
 }
 

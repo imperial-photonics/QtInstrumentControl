@@ -15,8 +15,25 @@ public:
    }
 
 protected:
+
+   void showEvent(QShowEvent* event)
+   {
+      QWidget::showEvent(event);
+      auto s = checkSize();
+      if (s != size())
+         resize(s);
+   }
    
    void resizeEvent(QResizeEvent* event)
+   {
+      auto s = checkSize();
+      if (s != size())
+         resize(s);
+      else
+         QMdiSubWindow::resizeEvent(event);
+   }
+
+   QSize checkSize()
    {
       auto w = widget();
       auto s = size();
@@ -36,15 +53,11 @@ protected:
          {
             s.setHeight(w->maximumHeight());
             resize_required = true;
+            resize(s);
          }
       }
 
-      if (resize_required)
-         resize(s);
-      else
-         QMdiSubWindow::resizeEvent(event);
-
-
+      return s;
    }
    
 };
