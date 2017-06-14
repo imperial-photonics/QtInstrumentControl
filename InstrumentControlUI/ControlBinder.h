@@ -3,7 +3,7 @@
 #include <QObject>
 #include <QString>
 #include <QSettings>
-#include <QCheckbox>
+#include <QCheckBox>
 #include <QLineEdit>
 #include <QComboBox>
 #include <QGroupBox>
