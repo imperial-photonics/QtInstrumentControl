@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.3)
+cmake_minimum_required(VERSION 3.7)
 
 project(InstrumentControlUI)
 
@@ -9,8 +9,6 @@ find_package(Qt5Widgets REQUIRED)
 qt5_wrap_ui(UI_HEADERS ImageRenderWindow.ui
                        ImageSeriesControl.ui
                        TaskProgressWidget.ui)
-
-#qt5_add_resources(UI_RESOURCES PuppetMasterResources.qrc)
 
 set(CMAKE_AUTOMOC ON)
 
@@ -33,9 +31,7 @@ set(HEADERS
    TaskProgressWidget.h
 )
 
-# manually add include directories since we're not linking libraries in
-# this module
-
+# manually add include directories since we're not linking libraries in this module
 set(COMMON_INCLUDE ${CMAKE_CURRENT_SOURCE_DIR} ${InstrumentControl_INCLUDE_DIR} ${CMAKE_CURRENT_BINARY_DIR} ${OpenCV_INCLUDE_DIRS})
 include_directories(${COMMON_INCLUDE} ${Qt5Widgets_INCLUDE_DIRS} ${Qt5SerialPort_INCLUDE_DIRS})
 
