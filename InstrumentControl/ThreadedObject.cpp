@@ -19,8 +19,8 @@ ThreadedObject::ThreadedObject(QObject* parent, QThread* ex_thread)
 
    if (private_thread)
    {
-      connect(this, &QObject::destroyed, thread, &QThread::quit, Qt::DirectConnection);
-      connect(this, &QObject::destroyed, thread, &QThread::deleteLater, Qt::DirectConnection);
+      connect(this, &QObject::destroyed, thread, &QThread::quit, Qt::QueuedConnection);
+      connect(thread, &QThread::finished, thread, &QThread::deleteLater, Qt::QueuedConnection);
    }
 
    //connect(this, &ThreadedObject::Started, this, &ThreadedObject::startInit, Qt::QueuedConnection);
