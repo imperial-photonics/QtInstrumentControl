@@ -109,9 +109,14 @@ private:
    void addTaskImpl(const std::shared_ptr<TaskProgress>& task)
    {
       tasks.push_back(task);
+
+      connect(task.get(), &TaskProgress::taskFinished, [&]() {
+         tasks.remove(task);
+      });
+   
       emit newTaskAdded();
    }
-
+  
    TaskRegister() {};
 
    std::list<std::shared_ptr<TaskProgress>> tasks;

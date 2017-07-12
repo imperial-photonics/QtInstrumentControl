@@ -38,6 +38,10 @@ public:
    void cancelPressed()
    {
       task->requestCancel();
+      task->setTaskName("Cancelling...");
+      progress_bar->setMinimum(0);
+      progress_bar->setMaximum(0);
+      progress_bar->setValue(0);
       cancel_button->setEnabled(false);
    }
 
