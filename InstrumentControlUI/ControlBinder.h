@@ -156,11 +156,10 @@ private:
          });
       }
 
-
       // Check if settings file contains an entry for this value
       // if so update the object accordingly. Otherwise use the 
       // value already in the object
-      T2 v = (obj->*getter)()
+      T2 v = (obj->*getter)();
       QVariant default_v = QVariant::fromValue(v);
       
       if (!transient)
