@@ -26,13 +26,19 @@ public:
       label->setText(task->getName());
       if (!task->isIndeterminate())
          setProgressBarDeterminate();
-      
+
+      cancel_button->setVisible(task->isCancellable());      
       connect(task.get(), &TaskProgress::taskFinished, [&]() { deleteLater(); });
       connect(task.get(), &TaskProgress::progressUpdatedPercentage, progress_bar, &QProgressBar::setValue);
       connect(task.get(), &TaskProgress::progressUpdatedPercentage, this, &TaskProgressWidget::setProgressBarDeterminate);
       connect(task.get(), &TaskProgress::taskNameChanged, label, &QLabel::setText);
-      connect(cancel_button, &QPushButton::pressed, task.get(), &TaskProgress::requestCancel);
-     // connect(cancel_button, &QPushButton::pressed, cancel_button, &QPushButton::setDisabled);
+      connect(cancel_button, &QPushButton::pressed, this, &TaskProgressWidget::cancelPressed);
+   }
+
+   void cancelPressed()
+   {
+      task->requestCancel();
+      cancel_button->setEnabled(false);
    }
 
    void setProgressBarDeterminate()
@@ -56,7 +62,6 @@ public:
       task_register = TaskRegister::getRegister();
       layout = new QVBoxLayout;
       layout->setMargin(0);
-
       setLayout(layout);
 
       connect(task_register, &TaskRegister::newTaskAdded, this, &ProgressCentre::update);

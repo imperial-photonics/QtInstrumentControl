@@ -10,8 +10,8 @@ class TaskProgress : public QObject
    Q_OBJECT
 
 public:
-   TaskProgress(const QString& task_name, int n_steps = 0, QObject* parent = nullptr) :
-      QObject(parent), task_name(task_name), n_steps(n_steps)
+   TaskProgress(const QString& task_name, bool cancellable = false, int n_steps = 0, QObject* parent = nullptr) :
+      QObject(parent), cancellable(cancellable), task_name(task_name), n_steps(n_steps)
    {
 
    }
@@ -49,12 +49,10 @@ public:
    }
 
    bool wasCancelRequested() { return cancel_requested; }
-
    bool isIndeterminate() { return (n_steps == 0) && (progress == 0); }
-
+   bool isCancellable() { return cancellable; }
    double getProgress() { return progress; }
    bool isFinished() { return finished; }
-
    const QString& getName() { return task_name; }
 
 signals:
@@ -67,6 +65,7 @@ signals:
 
 private:
 
+   bool cancellable = false;
    bool cancel_requested = false;
    int cur_step = 0;
    int n_steps = 0;
