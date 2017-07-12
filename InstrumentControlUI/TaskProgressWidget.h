@@ -47,7 +47,8 @@ public:
 
    void setProgressBarDeterminate()
    {
-      progress_bar->setMaximum(100);
+      if (!task->wasCancelRequested())
+         progress_bar->setMaximum(100);
    }
 
 protected:
