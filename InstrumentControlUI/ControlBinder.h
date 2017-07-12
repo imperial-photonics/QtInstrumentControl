@@ -160,17 +160,16 @@ private:
       // Check if settings file contains an entry for this value
       // if so update the object accordingly. Otherwise use the 
       // value already in the object
-      T2 v = std::bind(getter, obj)();
+      T2 v = (obj->*getter)()
       QVariant default_v = QVariant::fromValue(v);
       
       if (!transient)
          v = (settings->value(name, default_v)).value<T2>();
       
-      //std::bind(setter, obj, std::placeholders::_1)(v1);
-      std::bind(widget_setter, widget, std::placeholders::_1)(v);
-      
+      (widget->*widget_setter)(v);
+
       // Force widget to emit signal
-      std::bind(widget_signal, widget, std::placeholders::_1)(v);
+      (widget->*widget_signal)(v);
 
    }
 
@@ -191,14 +190,14 @@ private:
       // Check if settings file contains an entry for this value
       // if so update the object accordingly. Otherwise use the 
       // value already in the object
-      T v = std::bind(getter, obj)();
+      T v = (obj->*getter)();
       QVariant default_v = QVariant::fromValue(v);
       
       if (!transient)
          v = (settings->value(name, default_v)).value<T>();
       
-      std::bind(setter, obj, std::placeholders::_1)(v);
-      std::bind(widget_setter, widget, std::placeholders::_1)(v);
+      (obj->*setter)(v);
+      (widget->*widget_setter)(v);
    }
 
    QObject* parent;
@@ -219,8 +218,8 @@ BoundControl<W,V,U,T>::BoundControl(ControlBinder* binder, QString name, W* widg
       auto widget_signal = static_cast<void (W::*)(T)>(&W::valueChanged);
       auto widget_setter = static_cast<void (W::*)(T)>(&W::setValue);
 
-      binder->BindWidget(name, widget, widget_setter, widget_signal, static_cast<U*>(obj), setter, getter, signal, connection_type);
-      binder->SetByValue(name, widget, widget_setter, widget_signal, static_cast<U*>(obj), setter, getter, signal);
+      binder->BindWidget(name, widget, widget_setter, widget_signal, static_cast<U*>(obj), setter, getter, signal, connection_type, transient);
+      binder->SetByValue(name, widget, widget_setter, widget_signal, static_cast<U*>(obj), setter, getter, signal, transient);
    }
 
 
@@ -230,8 +229,8 @@ BoundControl<QCheckBox,V,U,T>::BoundControl(ControlBinder* binder, QString name,
       auto widget_signal = static_cast<void (QCheckBox::*)(T)>(&QCheckBox::toggled);
       auto widget_setter = static_cast<void (QCheckBox::*)(T)>(&QCheckBox::setChecked);
 
-      binder->BindWidget(name, widget, widget_setter, widget_signal, static_cast<U*>(obj), setter, getter, signal, connection_type);
-      binder->SetByValue(name, widget, widget_setter, widget_signal, static_cast<U*>(obj), setter, getter, signal);
+      binder->BindWidget(name, widget, widget_setter, widget_signal, static_cast<U*>(obj), setter, getter, signal, connection_type, transient);
+      binder->SetByValue(name, widget, widget_setter, widget_signal, static_cast<U*>(obj), setter, getter, signal, transient);
    }
 
 
@@ -241,8 +240,8 @@ BoundControl<QGroupBox,V,U,T>::BoundControl(ControlBinder* binder, QString name,
       auto widget_signal = static_cast<void (QGroupBox::*)(T)>(&QGroupBox::toggled);
       auto widget_setter = static_cast<void (QGroupBox::*)(T)>(&QGroupBox::setChecked);
 
-      binder->BindWidget(name, widget, widget_setter, widget_signal, static_cast<U*>(obj), setter, getter, signal, connection_type);
-      binder->SetByValue(name, widget, widget_setter, widget_signal, static_cast<U*>(obj), setter, getter, signal);
+      binder->BindWidget(name, widget, widget_setter, widget_signal, static_cast<U*>(obj), setter, getter, signal, connection_type, transient);
+      binder->SetByValue(name, widget, widget_setter, widget_signal, static_cast<U*>(obj), setter, getter, signal, transient);
    }
 
 
@@ -252,8 +251,8 @@ BoundControl<QLineEdit,V,U,const QString&>::BoundControl(ControlBinder* binder, 
       auto widget_signal = static_cast<void (QLineEdit::*)(const QString&)>(&QLineEdit::textEdited);
       auto widget_setter = static_cast<void (QLineEdit::*)(const QString&)>(&QLineEdit::setText);
 
-      binder->BindWidget(name, widget, widget_setter, widget_signal, static_cast<U*>(obj), setter, getter, signal, connection_type);
-      binder->SetByReference(name, widget, widget_setter, widget_signal, static_cast<U*>(obj), setter, getter, signal);
+      binder->BindWidget(name, widget, widget_setter, widget_signal, static_cast<U*>(obj), setter, getter, signal, connection_type, transient);
+      binder->SetByReference(name, widget, widget_setter, widget_signal, static_cast<U*>(obj), setter, getter, signal, transient);
    }
 
 
@@ -264,8 +263,8 @@ BoundControl<QComboBox,V,U,T>::BoundControl(ControlBinder* binder, QString name,
       auto widget_signal = static_cast<void (QComboBox::*)(int)>(&QComboBox::currentIndexChanged);
       auto widget_setter = static_cast<void (QComboBox::*)(int)>(&QComboBox::setCurrentIndex);
 
-      binder->BindWidget(name, widget, widget_setter, widget_signal, static_cast<U*>(obj), setter, getter, signal);
-      binder->SetByValue(name, widget, widget_setter, widget_signal, static_cast<U*>(obj), setter, getter, signal);
+      binder->BindWidget(name, widget, widget_setter, widget_signal, static_cast<U*>(obj), setter, getter, signal, transient);
+      binder->SetByValue(name, widget, widget_setter, widget_signal, static_cast<U*>(obj), setter, getter, signal, transient);
    }
 
 
@@ -277,11 +276,11 @@ BoundFilenameControl<V,U>::BoundFilenameControl(ControlBinder* binder, QString n
 
       QObject::connect(button, &QPushButton::pressed, [filter, obj, getter, setter]()
       {
-         QString filename = QFileDialog::getSaveFileName(nullptr, "Choose File Name", std::bind(getter, obj)(), filter);
+         QString filename = QFileDialog::getSaveFileName(nullptr, "Choose File Name", (obj->*getter)(), filter);
          if (!filename.isEmpty())
-            std::bind(setter, obj, std::placeholders::_1)(filename);
+            (obj->*setter)(filename);
       });
 
-      binder->BindWidget(name, widget, widget_setter, widget_signal, static_cast<U*>(obj), setter, getter, signal, connection_type);
-      binder->SetByReference(name, widget, widget_setter, widget_signal, static_cast<U*>(obj), setter, getter, signal);
+      binder->BindWidget(name, widget, widget_setter, widget_signal, static_cast<U*>(obj), setter, getter, signal, connection_type, transient);
+      binder->SetByReference(name, widget, widget_setter, widget_signal, static_cast<U*>(obj), setter, getter, signal, transient);
    }
