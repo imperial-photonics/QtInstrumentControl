@@ -113,8 +113,8 @@ private:
       {
          std::lock_guard<std::mutex> lk(task_mutex);
          tasks.push_back(task);
-         connect(task.get(), &TaskProgress::taskFinished, this, &TaskRegister::cleanupTasks, Qt::QueuedConnection);
       }
+      connect(task.get(), &TaskProgress::taskFinished, this, &TaskRegister::cleanupTasks, Qt::QueuedConnection);
       emit newTaskAdded();
    }
 
