@@ -2,6 +2,7 @@
 
 #include <QObject>
 #include <memory>
+#include <mutex>
 #include <list>
 
 
@@ -97,6 +98,7 @@ public:
 
    const std::list<std::shared_ptr<TaskProgress>>& getTasks()
    {
+      std::lock_guard<std::mutex> lk(task_mutex);
       return tasks;
    }
 
@@ -108,17 +110,24 @@ private:
 
    void addTaskImpl(const std::shared_ptr<TaskProgress>& task)
    {
-      tasks.push_back(task);
-
-      connect(task.get(), &TaskProgress::taskFinished, [&]() {
-         tasks.remove(task);
-      });
-   
+      {
+         std::lock_guard<std::mutex> lk(task_mutex);
+         tasks.push_back(task);
+         connect(task.get(), &TaskProgress::taskFinished, this, &TaskRegister::cleanupTasks, Qt::QueuedConnection);
+      }
       emit newTaskAdded();
+   }
+
+   void cleanupTasks()
+   {
+      // Remove completed tasks from the register
+      std::lock_guard<std::mutex> lk(task_mutex);
+      tasks.remove_if([](const std::shared_ptr<TaskProgress>& task) { return task->isFinished(); });
    }
   
    TaskRegister() {};
 
+   std::mutex task_mutex;
    std::list<std::shared_ptr<TaskProgress>> tasks;
    static TaskRegister* instance;
 };
