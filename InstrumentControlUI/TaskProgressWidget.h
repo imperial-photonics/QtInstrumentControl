@@ -28,7 +28,7 @@ public:
          setProgressBarDeterminate();
 
       cancel_button->setVisible(task->isCancellable());      
-      connect(task.get(), &TaskProgress::taskFinished, [&]() { deleteLater(); });
+      connect(task.get(), &TaskProgress::taskFinished, this, &QWidget::deleteLater);
       connect(task.get(), &TaskProgress::progressUpdatedPercentage, progress_bar, &QProgressBar::setValue);
       connect(task.get(), &TaskProgress::progressUpdatedPercentage, this, &TaskProgressWidget::setProgressBarDeterminate);
       connect(task.get(), &TaskProgress::taskNameChanged, label, &QLabel::setText);
