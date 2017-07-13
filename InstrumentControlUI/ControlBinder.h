@@ -58,7 +58,7 @@ template<class V, class U>
 class BoundFilenameControl
 {
 public:
-   BoundFilenameControl(ControlBinder* binder, QString name, QLineEdit* widget, QPushButton* button, QString filter, V* obj, void(U::*setter)(const QString&), const QString&(U::*getter)(void), void (U::*signal)(const QString&) = nullptr, Qt::ConnectionType connection_type = Qt::AutoConnection);
+   BoundFilenameControl(ControlBinder* binder, QString name, QLineEdit* widget, QPushButton* button, QString filter, V* obj, void(U::*setter)(const QString&), const QString&(U::*getter)(void), void (U::*signal)(const QString&) = nullptr, Qt::ConnectionType connection_type = Qt::AutoConnection, bool transient = false);
 };
 
 class ControlBinder 
@@ -268,7 +268,7 @@ BoundControl<QComboBox,V,U,T>::BoundControl(ControlBinder* binder, QString name,
 
 
 template<class V, class U>
-BoundFilenameControl<V,U>::BoundFilenameControl(ControlBinder* binder, QString name, QLineEdit* widget, QPushButton* button, QString filter, V* obj, void(U::*setter)(const QString&), const QString&(U::*getter)(void), void (U::*signal)(const QString&), Qt::ConnectionType connection_type)
+BoundFilenameControl<V,U>::BoundFilenameControl(ControlBinder* binder, QString name, QLineEdit* widget, QPushButton* button, QString filter, V* obj, void(U::*setter)(const QString&), const QString&(U::*getter)(void), void (U::*signal)(const QString&), Qt::ConnectionType connection_type, bool transient)
    {
       auto widget_signal = static_cast<void (QLineEdit::*)(const QString&)>(&QLineEdit::textEdited);
       auto widget_setter = static_cast<void (QLineEdit::*)(const QString&)>(&QLineEdit::setText);
