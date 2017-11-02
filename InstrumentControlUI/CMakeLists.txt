@@ -16,6 +16,7 @@ set(SOURCE
    ImageRenderWidget.cpp
    ParameterWidget.cpp
    TaskProgress.cpp
+   CustomDialog.cpp
 )
 
 
@@ -29,6 +30,7 @@ set(HEADERS
    ConstrainedMdiSubWindow.h
    TaskProgress.h
    TaskProgressWidget.h
+   CustomDialog.h
 )
 
 # manually add include directories since we're not linking libraries in this module
