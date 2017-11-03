@@ -77,11 +77,11 @@ CustomDialog::CustomDialog(QString title, QWidget *parent, btnset btnSet)
  if(btnSet == BS_CANCEL_OKAY)
  {
    addCustomButton("Cancel", BB_REJECT);
-   addCustomButton("Okay",   BB_ACCEPT);
+   addCustomButton("OK",   BB_ACCEPT);
  }
  else if(btnSet == BS_OKAY_ONLY)
  {
-   addCustomButton("Okay", BB_ACCEPT);
+   addCustomButton("OK", BB_ACCEPT);
  }
  else if(btnSet == BS_NO_YES)
  {
