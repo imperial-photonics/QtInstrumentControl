@@ -26,13 +26,9 @@ QImage CopyToQImage(cv::Mat& cv_image, int bit_shift)
 
    QImage q_image(size.width, size.height, format);
 
-   double scale = 255;
-   if (depth == CV_32F)
-   {
-      double mn, mx;
-      cv::minMaxIdx(cv_image, &mn, &mx);
-      scale = 255 / (1.1 * mx);
-   }
+   double mn, mx;
+   cv::minMaxIdx(cv_image, &mn, &mx);
+   double scale = 255.0 / (1.1 * mx);
 
    for (int y = 0; y < size.height; y++)
    {
@@ -43,7 +39,7 @@ QImage CopyToQImage(cv::Mat& cv_image, int bit_shift)
          unsigned char* data_ptr = cv_image.row(y).data;
          for (int x = 0; x < size.width * channels; x++)
          {
-            unsigned char d = data_ptr[x] << (8 - bit_shift);
+            unsigned char d = data_ptr[x] * scale; //<< (8 - bit_shift);
             image_ptr[x] = d;
          }
 
@@ -53,9 +49,9 @@ QImage CopyToQImage(cv::Mat& cv_image, int bit_shift)
          unsigned short* data_ptr = reinterpret_cast<unsigned short*>(cv_image.row(y).data);
          for (int x=0; x < size.width; x++)
          {
-            unsigned short d = data_ptr[x] >> bit_shift;
-            if (d > 255)
-               d = 255;
+            unsigned short d = data_ptr[x] * scale; // >> bit_shift;
+//            if (d > 255)
+//               d = 255;
             image_ptr[x] = d;
          }
       }
