@@ -228,33 +228,33 @@ public:     //## METHODS:
  
  
   DialogElement& addNewElement(DlgType _type, QString caption, QString tooltip, bool makeLabel);
-  int addLabel(QString caption, bool bold=false, QString tooltip="");
-  int addHtmlLabel(QString caption, QString tooltip="");
-  int addCheckBox(QString caption, bool *checked, QString tooltip="");
-  int addLineEdit(QString caption, string *stringValue, QString tooltip="");
-  int addReadOnlyLineEdit(QString caption, QString text, QString tooltip="");
-  int addLineEditF(QString caption, float min, float max, float *value, float decimals,  QString tooltip="", QString unitsStr="");
-  int addSpinBox(QString caption, int min, int max, int *value, int step, QString tooltip="");
-  int addDblSpinBoxF(QString caption, float min, float max, float *value, int decimals, float step=0.1, QString tooltip="");
-  int addComboBox(QString caption, QString barSepList, int *selIdx, QString tooltip="");
-  int addRadioGrp(QString caption, QString barSepList, int *selIdx, QString tooltip="", QString tooltipArr="", bool checkable=false, bool *checked=0);
-  int addColorSel(QString caption, QColor *color, QString tooltip="");
-  int addMinMaxSpinBoxPair(QString caption, QString middleCaption, int min, int max, int *minValue, int *maxValue, int step=1, QString tooltip="");
-  int addTextEdit(string *text, bool richText, bool readOnly, int minHeight=90, QString tooltip="");
-  int addReadOnlyTextEdit(QString text, bool richText, int minHeight=90, QString tooltip="");
-  int addProgressBar(QString caption, int percent, int width, bool showValue, QString tooltip="");
-  int addPercentBar(QString caption, QString valueLabel, float percent, int width, QColor colorBar, QString tooltip="", QFrame::Shape shape = QFrame::StyledPanel, QFrame::Shadow shadow = QFrame::Sunken);
-  int addVSpacer(int minHeight=0);
+  size_t addLabel(QString caption, bool bold=false, QString tooltip="");
+  size_t addHtmlLabel(QString caption, QString tooltip="");
+  size_t addCheckBox(QString caption, bool *checked, QString tooltip="");
+  size_t addLineEdit(QString caption, string *stringValue, QString tooltip="");
+  size_t addReadOnlyLineEdit(QString caption, QString text, QString tooltip="");
+  size_t addLineEditF(QString caption, float min, float max, float *value, float decimals,  QString tooltip="", QString unitsStr="");
+  size_t addSpinBox(QString caption, int min, int max, int *value, int step, QString tooltip="");
+  size_t addDblSpinBoxF(QString caption, float min, float max, float *value, int decimals, float step=0.1, QString tooltip="");
+  size_t addComboBox(QString caption, QString barSepList, int *selIdx, QString tooltip="");
+  size_t addRadioGrp(QString caption, QString barSepList, int *selIdx, QString tooltip="", QString tooltipArr="", bool checkable=false, bool *checked=0);
+  size_t addColorSel(QString caption, QColor *color, QString tooltip="");
+  size_t addMinMaxSpinBoxPair(QString caption, QString middleCaption, int min, int max, int *minValue, int *maxValue, int step=1, QString tooltip="");
+  size_t addTextEdit(string *text, bool richText, bool readOnly, int minHeight=90, QString tooltip="");
+  size_t addReadOnlyTextEdit(QString text, bool richText, int minHeight=90, QString tooltip="");
+  size_t addProgressBar(QString caption, int percent, int width, bool showValue, QString tooltip="");
+  size_t addPercentBar(QString caption, QString valueLabel, float percent, int width, QColor colorBar, QString tooltip="", QFrame::Shape shape = QFrame::StyledPanel, QFrame::Shadow shadow = QFrame::Sunken);
+  size_t addVSpacer(int minHeight=0);
  
-  int beginGroupBox(QString caption, bool flat=false, QString tooltip="", bool checkable=false, bool *checked=0);
+  size_t beginGroupBox(QString caption, bool flat=false, QString tooltip="", bool checkable=false, bool *checked=0);
   void endGroupBox();
  
-  int addCheckPrev(QString caption, bool *checked, chkbehav chkBeh, bool removeLabel, QString tooltip="");
-  int addAutoCompletePrev(QStringList wordList, bool caseSensitive=false);
-  bool setStyleElem(int idx, string styleStr, bool bold=false);
+  size_t addCheckPrev(QString caption, bool *checked, chkbehav chkBeh, bool removeLabel, QString tooltip="");
+  size_t addAutoCompletePrev(QStringList wordList, bool caseSensitive=false);
+  bool setStyleElem(size_t idx, string styleStr, bool bold=false);
   void setStylePrev(string styleStr, bool bold=false);
  
-  bool setEnabledElem(int idx, bool enabled);
+  bool setEnabledElem(size_t idx, bool enabled);
   void setEnabledPrev(bool enabled);
   void setEnabledAll(bool enabled);
  
