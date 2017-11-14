@@ -262,7 +262,7 @@ BoundControl<QComboBox,V,U,T>::BoundControl(ControlBinder* binder, QString name,
       auto widget_signal = static_cast<void (QComboBox::*)(int)>(&QComboBox::currentIndexChanged);
       auto widget_setter = static_cast<void (QComboBox::*)(int)>(&QComboBox::setCurrentIndex);
 
-      binder->BindWidget(name, widget, widget_setter, widget_signal, static_cast<U*>(obj), setter, getter, signal, transient);
+      binder->BindWidget(name, widget, widget_setter, widget_signal, static_cast<U*>(obj), setter, getter, signal, connection_type, transient);
       binder->SetByValue(name, widget, widget_setter, widget_signal, static_cast<U*>(obj), setter, getter, signal, transient);
    }
 
