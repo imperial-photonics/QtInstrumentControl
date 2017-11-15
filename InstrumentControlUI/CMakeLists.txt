@@ -22,6 +22,10 @@ set(SOURCE
 
 set(HEADERS
    ControlBinder.h
+   BoundControl.h
+   BoundControlImpl.h
+   BoundPropertyControl.h
+   BoundPropertyControlImpl.h
    ImageRenderWidget.h
    ImageRenderWindow.h
    ImageSeriesControl.h
