@@ -11,7 +11,7 @@ class ControlBinder
 
 public:
 
-#define BindProperty(widget, ...) BindPropertyImpl(#widget, widget, ##__VA_ARGS__)
+#define BindProperty(widget, object, prop) BindPropertyImpl(#widget, widget, object, #prop, prop)
 
 #define Bind(widget, ...) BindImpl(#widget, widget, ##__VA_ARGS__)
 #define DirectBind(widget, ...) DirectBindImpl(#widget, widget, ##__VA_ARGS__)
@@ -25,10 +25,10 @@ public:
 
 protected:
 
-   template<class W>
-   void BindPropertyImpl(QString name, W* widget, QObject* obj, const char* prop)
+   template<class W, class T>
+   void BindPropertyImpl(QString name, W* widget, QObject* obj, const char* prop, T v)
    {
-      BoundPropertyControl<W>* control = new BoundPropertyControl<W>(this, name, widget, obj, prop);
+      BoundPropertyControl<W,T>* control = new BoundPropertyControl<W,T>(this, name, widget, obj, prop, v);
    }
 
 
@@ -217,7 +217,7 @@ private:
    template<class W, class V, class U, class T>
    friend class BoundControl;
 
-   template<class W>
+   template<class W, class T>
    friend class BoundPropertyControl;
 
    template<class V, class U>

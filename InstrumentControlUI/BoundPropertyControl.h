@@ -13,41 +13,41 @@
 
 class ControlBinder;
 
-template<class W>
+template<class W, class T>
 class BoundPropertyControl
 {
    // W : class of widget
 public:
-   BoundPropertyControl(ControlBinder* binder, QString name, W* widget, QObject* obj, const char* prop);
+   BoundPropertyControl(ControlBinder* binder, QString name, W* widget, QObject* obj, const char* prop, T value);
 };
 
-template<>
-class BoundPropertyControl<QCheckBox>
+template<class T>
+class BoundPropertyControl<QCheckBox,T>
 {
 public:
-   BoundPropertyControl(ControlBinder* binder, QString name, QCheckBox* widget, QObject* obj, const char* prop);
+   BoundPropertyControl(ControlBinder* binder, QString name, QCheckBox* widget, QObject* obj, const char* prop, T value);
 };
 
-template<>
-class BoundPropertyControl<QGroupBox>
+template<class T>
+class BoundPropertyControl<QGroupBox,T>
 {
 public:
-   BoundPropertyControl(ControlBinder* binder, QString name, QGroupBox* widget, QObject* obj, const char* prop);
+   BoundPropertyControl(ControlBinder* binder, QString name, QGroupBox* widget, QObject* obj, const char* prop, T value);
 };
 
-template<>
-class BoundPropertyControl<QLineEdit>
+template<class T>
+class BoundPropertyControl<QLineEdit,T>
 {
 public:
-   BoundPropertyControl(ControlBinder* binder, QString name, QLineEdit* widget, QObject* obj, const char* prop);
+   BoundPropertyControl(ControlBinder* binder, QString name, QLineEdit* widget, QObject* obj, const char* prop, T value);
 };
 
 
-template<>
-class BoundPropertyControl<QComboBox>
+template<class T>
+class BoundPropertyControl<QComboBox,T>
 {
 public:
-   BoundPropertyControl(ControlBinder* binder, QString name, QComboBox* widget, QObject* obj, const char* prop);
+   BoundPropertyControl(ControlBinder* binder, QString name, QComboBox* widget, QObject* obj, const char* prop, T value);
 };
 
 
