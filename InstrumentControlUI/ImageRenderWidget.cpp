@@ -1,5 +1,6 @@
 #include <QFileDialog>
 #include <opencv2/highgui/highgui.hpp>
+#include <opencv2/imgproc/imgproc.hpp>
 
 #include "ImageRenderWidget.h"
 
@@ -18,6 +19,11 @@ QImage CopyToQImage(cv::Mat& cv_image, int bit_shift)
    {
       format = QImage::Format::Format_ARGB32;
       assert(depth == CV_8U);
+   }
+   else if (channels == 3)
+   {
+      format = QImage::Format::Format_RGB888;
+      cv::cvtColor(cv_image, cv_image, CV_RGB2BGR);
    }
    else if (channels == 1)
       format = QImage::Format_Indexed8;
