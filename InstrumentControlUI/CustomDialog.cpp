@@ -925,7 +925,7 @@ size_t CustomDialog::addAutoCompletePrev(QStringList wordList, bool caseSensitiv
 
 bool CustomDialog::setStyleElem(size_t idx, string styleStr, bool bold)
 {
- if(idx >= elements.size() || idx < 0)
+ if(idx >= elements.size())
    return false;
 
  DialogElement &e = elements[idx];
@@ -982,7 +982,7 @@ void CustomDialog::setStylePrev(string styleStr, bool bold)
 
 bool CustomDialog::setEnabledElem(size_t idx, bool enabled)
 {
- if(idx >= elements.size() || idx < 0)
+ if(idx >= elements.size())
    return false;
 
  DialogElement &e = elements[idx];
