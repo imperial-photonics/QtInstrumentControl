@@ -41,11 +41,10 @@ if(USE_THORLABS_APT_CONTROLLER)
    set(APT_LIBS ${CMAKE_CURRENT_SOURCE_DIR}/ftd2xx.lib)
 endif()
 
-# manually add include directories since we're not linking libraries in
-# this module
-include_directories(${Qt5Widgets_INCLUDE_DIRS} ${Qt5SerialPort_INCLUDE_DIRS} ${OpenCV_INCLUDE_DIRS})
 
-add_library(InstrumentControl OBJECT ${SOURCE} ${HEADERS} ${UI_HEADERS})
+add_library(InstrumentControl STATIC ${SOURCE} ${HEADERS} ${UI_HEADERS})
 
-set(InstrumentControl_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR} PARENT_SCOPE)
-set(InstrumentControl_LIBRARIES ${APT_LIBS} ${OpenCV_LIBS} PARENT_SCOPE)
+target_include_directories(InstrumentControl PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}
+                                             PRIVATE ${Qt5Widgets_INCLUDE_DIRS} ${Qt5SerialPort_INCLUDE_DIRS} ${OpenCV_INCLUDE_DIRS})
+
+target_link_libraries(InstrumentControl ${APT_LIBS} ${OpenCV_LIBS})

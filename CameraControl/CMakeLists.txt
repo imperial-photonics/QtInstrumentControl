@@ -19,6 +19,7 @@ find_package(Qt5OpenGL REQUIRED)
 find_package(OpenCV REQUIRED)
 
 set(CMAKE_AUTOMOC ON)
+cmake_policy(SET CMP0071 OLD)
 
 set(Ximea_DIR C:/XIMEA/API)
 

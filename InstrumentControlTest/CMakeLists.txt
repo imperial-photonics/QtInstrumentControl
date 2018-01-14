@@ -16,16 +16,17 @@ find_package(Qt5SerialPort REQUIRED)
 find_package(Qt5Designer REQUIRED)
 
 set(CMAKE_AUTOMOC ON)
+cmake_policy(SET CMP0071 OLD)
 
-include_directories(${InstrumentControl_INCLUDE_DIR} ${InstrumentControlUI_INCLUDE_DIR} ${COMMON_INCLUDE_DIR} ${CMAKE_CURRENT_BINARY_DIR} ${QT_CUSTOM_WIDGETS_INCLUDE_DIR})
+include_directories(${COMMON_INCLUDE_DIR} ${CMAKE_CURRENT_BINARY_DIR} ${QT_CUSTOM_WIDGETS_INCLUDE_DIR})
 
 qt5_wrap_ui(UI_HEADERS ArduinoCounterTest.ui)
 
-add_executable(InstrumentControlTest ArduinoCounterTest.h ArduinoCounterTest.cpp ${UI_HEADERS} $<TARGET_OBJECTS:InstrumentControl> $<TARGET_OBJECTS:InstrumentControlUI>)
+add_executable(InstrumentControlTest ArduinoCounterTest.h ArduinoCounterTest.cpp ${UI_HEADERS})
 
 qt5_use_modules(InstrumentControlTest Widgets PrintSupport OpenGL Gui SerialPort)
 
-set_target_properties(InstrumentControlTest PROPERTIES LINK_FLAGS "/NODEFAULTLIB:library" )
+set_target_properties(InstrumentControlTest PROPERTIES LINK_FLAGS "/NODEFAULTLIB:library")
 
 target_link_libraries(InstrumentControlTest
                       QTDesignerPlugins
@@ -34,4 +35,5 @@ target_link_libraries(InstrumentControlTest
                       Qt5::OpenGL 
                       Qt5::Gui
                       Qt5::SerialPort
-                      ${InstrumentControl_LIBRARIES})
+                      InstrumentControl
+                      InstrumentControlUI)

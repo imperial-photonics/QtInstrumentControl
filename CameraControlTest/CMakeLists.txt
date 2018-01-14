@@ -17,12 +17,12 @@ find_package(OpenCV REQUIRED)
 include_directories(${CameraControl_INCLUDE_DIR} ${InstrumentControlUI_INCLUDE_DIR} )
 
 
-add_executable(CameraControlTest AndorTest.cpp $<TARGET_OBJECTS:InstrumentControlUI> $<TARGET_OBJECTS:InstrumentControl>)
+add_executable(CameraControlTest AndorTest.cpp)
 
 qt5_use_modules(CameraControlTest Widgets PrintSupport OpenGL Gui SerialPort)
 
 set_target_properties(CameraControlTest PROPERTIES LINK_FLAGS "/NODEFAULTLIB:library" )
 
-target_link_libraries(CameraControlTest ${CameraControl_LIBRARIES} CameraControl )
+target_link_libraries(CameraControlTest ${CameraControl_LIBRARIES} CameraControl InstrumentControl InstrumentControlUI)
 CUDA_ADD_CUFFT_TO_TARGET( CameraControlTest ) 
    

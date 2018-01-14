@@ -6,11 +6,13 @@ find_package(OpenCV REQUIRED core highgui)
 
 find_package(Qt5Widgets REQUIRED)
 
+set(CMAKE_AUTOMOC ON)
+cmake_policy(SET CMP0071 OLD)
+
+
 qt5_wrap_ui(UI_HEADERS ImageRenderWindow.ui
                        ImageSeriesControl.ui
                        TaskProgressWidget.ui)
-
-set(CMAKE_AUTOMOC ON)
 
 set(SOURCE
    ImageRenderWidget.cpp
@@ -18,7 +20,6 @@ set(SOURCE
    TaskProgress.cpp
    CustomDialog.cpp
 )
-
 
 set(HEADERS
    ControlBinder.h
@@ -37,12 +38,12 @@ set(HEADERS
    CustomDialog.h
 )
 
-# manually add include directories since we're not linking libraries in this module
-set(COMMON_INCLUDE ${CMAKE_CURRENT_SOURCE_DIR} ${InstrumentControl_INCLUDE_DIR} ${CMAKE_CURRENT_BINARY_DIR} ${OpenCV_INCLUDE_DIRS})
-include_directories(${COMMON_INCLUDE} ${Qt5Widgets_INCLUDE_DIRS} ${Qt5SerialPort_INCLUDE_DIRS})
+add_library(InstrumentControlUI STATIC ${SOURCE} ${HEADERS} ${UI_HEADERS})
 
-set(InstrumentControlUI_INCLUDE_DIR ${COMMON_INCLUDE} PARENT_SCOPE)
+target_include_directories(InstrumentControlUI PUBLIC  ${CMAKE_CURRENT_SOURCE_DIR}
+                                                       ${CMAKE_CURRENT_BINARY_DIR} 
+                                               PRIVATE ${OpenCV_INCLUDE_DIRS}
+                                                       ${Qt5Widgets_INCLUDE_DIRS} 
+                                                       ${Qt5SerialPort_INCLUDE_DIRS})
 
-add_library(InstrumentControlUI OBJECT ${SOURCE} ${HEADERS} ${UI_HEADERS})
-
-
+target_link_libraries(InstrumentControlUI InstrumentControl)
