@@ -1,4 +1,4 @@
-#include "customdialog.h"
+#include "CustomDialog.h"
 
 //############################################################
 
