@@ -96,9 +96,7 @@
 #include <iostream>
 #include <vector>
 #include <string>
- 
-using namespace std;
- 
+  
 #include <qdialog.h>
 #include <qobject.h>
 #include <qvariant.h>
@@ -176,7 +174,7 @@ struct DialogElement
  
   //** POINTERS USE TO PASS BACK ANY CHANGED VALUES:
  
-  string  *returnString;        // For DLG_LINEEDIT.
+  std::string *returnString;        // For DLG_LINEEDIT.
   int     *returnInt;           // For DLG_SPINBOX, DLG_COMBOBOX & DLG_RADIOGRP.
   int     *returnInt2;          // For DLG_DBLSPINBOX.
   bool    *returnBool;          // For DLG_CHECKBOX.
@@ -200,7 +198,7 @@ struct DialogElement
   QDoubleSpinBox *dblSpnBox;
   QComboBox      *cmbBox;
   ColorButton    *btnColor;
-  vector<QRadioButton*> radBtn;
+  std::vector<QRadioButton*> radBtn;
   QGroupBox      *grpBox;
   QTextEdit      *textEdit;
  
@@ -231,7 +229,7 @@ public:     //## METHODS:
   size_t addLabel(QString caption, bool bold=false, QString tooltip="");
   size_t addHtmlLabel(QString caption, QString tooltip="");
   size_t addCheckBox(QString caption, bool *checked, QString tooltip="");
-  size_t addLineEdit(QString caption, string *stringValue, QString tooltip="");
+  size_t addLineEdit(QString caption, std::string* stringValue, QString tooltip="");
   size_t addReadOnlyLineEdit(QString caption, QString text, QString tooltip="");
   size_t addLineEditF(QString caption, float min, float max, float *value, float decimals,  QString tooltip="", QString unitsStr="");
   size_t addSpinBox(QString caption, int min, int max, int *value, int step, QString tooltip="");
@@ -240,7 +238,7 @@ public:     //## METHODS:
   size_t addRadioGrp(QString caption, QString barSepList, int *selIdx, QString tooltip="", QString tooltipArr="", bool checkable=false, bool *checked=0);
   size_t addColorSel(QString caption, QColor *color, QString tooltip="");
   size_t addMinMaxSpinBoxPair(QString caption, QString middleCaption, int min, int max, int *minValue, int *maxValue, int step=1, QString tooltip="");
-  size_t addTextEdit(string *text, bool richText, bool readOnly, int minHeight=90, QString tooltip="");
+  size_t addTextEdit(std::string *text, bool richText, bool readOnly, int minHeight=90, QString tooltip="");
   size_t addReadOnlyTextEdit(QString text, bool richText, int minHeight=90, QString tooltip="");
   size_t addProgressBar(QString caption, int percent, int width, bool showValue, QString tooltip="");
   size_t addPercentBar(QString caption, QString valueLabel, float percent, int width, QColor colorBar, QString tooltip="", QFrame::Shape shape = QFrame::StyledPanel, QFrame::Shadow shadow = QFrame::Sunken);
@@ -251,8 +249,8 @@ public:     //## METHODS:
  
   size_t addCheckPrev(QString caption, bool *checked, chkbehav chkBeh, bool removeLabel, QString tooltip="");
   size_t addAutoCompletePrev(QStringList wordList, bool caseSensitive=false);
-  bool setStyleElem(size_t idx, string styleStr, bool bold=false);
-  void setStylePrev(string styleStr, bool bold=false);
+  bool setStyleElem(size_t idx, std::string styleStr, bool bold=false);
+  void setStylePrev(std::string styleStr, bool bold=false);
  
   bool setEnabledElem(size_t idx, bool enabled);
   void setEnabledPrev(bool enabled);
@@ -262,14 +260,14 @@ public:     //## METHODS:
  
 public:       //## DATA:
  
-  vector<DialogElement> elements;     // The vector of GUI elements used to display
+  std::vector<DialogElement> elements;     // The vector of GUI elements used to display
                                       //   and change the values.
   int customBtnClicked;               // Set to the index of the button
                                       //   "customBtn" clicked.
  
 private: 
  
-  vector<QPushButton*> customBtn;      // Vector of buttons down the button of the GUI.
+  std::vector<QPushButton*> customBtn;      // Vector of buttons down the button of the GUI.
   QVBoxLayout *vboxLayout;
   QHBoxLayout *hbtnLayout;
  
@@ -295,10 +293,10 @@ public slots:   //## SLOTS:
 //-------------------------------
 //## SMALL MESSAGE BOX FUNCTIONS:
  
-void MsgBox(string str);
+void MsgBox(std::string str);
 void MsgBox(QWidget *parent, QString title, QString str);
-bool MsgBoxYesNo(QWidget *parent, string str);
-string InputBoxString(QWidget *parent, string title, string label, string defaultStr);
+bool MsgBoxYesNo(QWidget *parent, std::string str);
+std::string InputBoxString(QWidget *parent, std::string title, std::string label, std::string defaultStr);
  
 //-------------------------------
 //## SMALL INLINE GUI FUNCTIONS:
@@ -307,7 +305,7 @@ inline QString QStr(int number  );
 inline QString QStr(long number );
 inline QString QStr(float number);
 inline QString QStr(double number);
-inline string qStringToString(QString qstr);
+inline std::string qStringToString(QString qstr);
 inline QString nbsp(int numSpaces);
 inline void setBold(QWidget *wid, bool bold);
 inline void setTextColor(QWidget *wid, int r, int g, int b);
@@ -336,9 +334,9 @@ inline QString QStr(double number)  {  return QString::number(number);  }
 //---------
 //-- Converts a QString to a standard string
  
-inline string qStringToString(QString qstr)
+inline std::string qStringToString(QString qstr)
 {
-  string str = "";
+  std::string str = "";
   for(int i=0; i<qstr.length(); i++)
     str +=  qstr.at(i).toLatin1();
   return str;
