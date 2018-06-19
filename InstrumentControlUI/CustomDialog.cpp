@@ -120,6 +120,7 @@ bool CustomDialog::addCustomButton(QString buttonStr, btnbehav buttonBehav,
  {
    case (BB_ACCEPT):
      QObject::connect(newButton, SIGNAL(clicked()), this, SLOT(customBtnAccept()));
+     newButton->setDefault(true);
      break;
    case (BB_REJECT):
      QObject::connect(newButton, SIGNAL(clicked()), this, SLOT(customBtnReject()));
