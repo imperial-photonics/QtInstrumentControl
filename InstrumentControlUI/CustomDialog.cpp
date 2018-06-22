@@ -856,6 +856,7 @@ size_t CustomDialog::addCheckPrev(QString caption, bool *checked,
  case(DLG_GRPBOX):     wid = e.grpBox;     break;
  case(DLG_COLOR):      wid = e.btnColor;   break;
  case(DLG_TEXTEDIT):   wid = e.textEdit;   break;
+ default: break;
  }
 
  switch(chkBehav)
@@ -957,6 +958,7 @@ bool CustomDialog::setStyleElem(size_t idx, string styleStr, bool bold)
    case(DLG_COLOR     ):    break;
    case(DLG_GRPBOX    ):    e.grpBox->setStyleSheet(styleQStr);     break;
    case(DLG_TEXTEDIT  ):    e.textEdit->setStyleSheet(styleQStr);     break;
+   default: break;
  }
 
  return true;
@@ -1098,8 +1100,10 @@ void CustomDialog::customBtnAccept()
      if(e.textEdit->isReadOnly() == false)
        *e.returnString = e.textEdit->toPlainText().toStdString();
      break;
-   }
 
+   default:
+      break;
+   }
  }
 
  QDialog::accept();
