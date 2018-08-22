@@ -1,0 +1,3 @@
+[submodule "qpreferences"]
+	path = qpreferences
+	url = https://github.com/kinnalru/qpreferences
