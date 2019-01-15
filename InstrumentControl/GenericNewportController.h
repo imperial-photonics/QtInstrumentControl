@@ -2,7 +2,7 @@
 
 #include "SerialDevice.h"
 #include <cassert>
-#include "QStringList.h"
+#include <QStringList>
 
 
 class GenericNewportController : public SerialDevice

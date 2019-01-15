@@ -3,8 +3,7 @@ cmake_minimum_required(VERSION 3.7)
 project(InstrumentControl)
 
 find_package(OpenCV REQUIRED core)
-find_package(Qt5Widgets REQUIRED)
-find_package(Qt5SerialPort REQUIRED)
+find_package(Qt5 REQUIRED COMPONENTS Widgets SerialPort)
 
 option(USE_THORLABS_APT_CONTROLLER OFF)
 
@@ -15,7 +14,7 @@ set(SOURCE
    ArduinoCounter.cpp
    SerialDevice.cpp
    GenericNewportController.cpp
-   
+
    ImageSource.cpp
    ThreadedObject.cpp
    AbstractImageWriter.cpp
@@ -45,6 +44,6 @@ endif()
 add_library(InstrumentControl STATIC ${SOURCE} ${HEADERS} ${UI_HEADERS})
 
 target_include_directories(InstrumentControl PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}
-                                             PRIVATE ${Qt5Widgets_INCLUDE_DIRS} ${Qt5SerialPort_INCLUDE_DIRS} ${OpenCV_INCLUDE_DIRS})
+                                             PRIVATE ${OpenCV_INCLUDE_DIRS})
 
-target_link_libraries(InstrumentControl ${APT_LIBS} ${OpenCV_LIBS})
+target_link_libraries(InstrumentControl PUBLIC ${APT_LIBS} ${OpenCV_LIBS} Qt5::Widgets Qt5::SerialPort)

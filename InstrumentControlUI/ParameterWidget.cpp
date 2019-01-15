@@ -338,7 +338,5 @@ void ParameterWidget::enumerationWidgetUpdated(int index)
 {
    QComboBox* combo = static_cast<QComboBox*>(obj);
    QVariant var = combo->currentData();
-   int64_t idx = var.toInt();
-
-   widgetUpdated(QVariant(idx));
+   widgetUpdated(var);
 }
