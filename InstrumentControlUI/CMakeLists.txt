@@ -19,6 +19,7 @@ set(SOURCE
    ParameterWidget.cpp
    TaskProgress.cpp
    CustomDialog.cpp
+   QLedIndicator.cpp
 )
 
 set(HEADERS
@@ -36,6 +37,7 @@ set(HEADERS
    TaskProgress.h
    TaskProgressWidget.h
    CustomDialog.h
+   QLedIndicator.h
 )
 
 add_library(InstrumentControlUI STATIC ${SOURCE} ${HEADERS} ${UI_HEADERS})
