@@ -26,10 +26,13 @@ const qreal QLedIndicator::scaledSize = 1000; /* Visual Studio static const mess
 
 QLedIndicator::QLedIndicator(QWidget *parent) : QWidget(parent)
 {
-    setMinimumSize(24,24);
+    setMinimumSize(22,22);
+
+    setSizePolicy(QSizePolicy(QSizePolicy::Fixed,QSizePolicy::Fixed));
     okColor = { QColor(0,255,0), QColor(0,192,0) };
-    warningColor = { QColor(0,28,0), QColor(0,128,0) };
-    criticalColor = { QColor(0,28,0), QColor(0,128,0) };
+
+    warningColor = { QColor(255,255,0), QColor(192,192,0) };
+    criticalColor = { QColor(255,0,0), QColor(192,0,0) };
 }
 
 void QLedIndicator::setStatus(LedStatus ledStatus_)
@@ -86,16 +89,6 @@ void QLedIndicator::paintEvent(QPaintEvent *event) {
     gradient.setColorAt(0, color.first);
     gradient.setColorAt(1, color.second);
 
-    /*if( isChecked() ) {
-        gradient = QRadialGradient (QPointF(-500,-500), 1500, QPointF(-500,-500));
-        gradient.setColorAt(0, onColor1);
-        gradient.setColorAt(1, onColor2);
-    
-    } else {
-        gradient = QRadialGradient (QPointF(500,500), 1500, QPointF(500,500));
-        gradient.setColorAt(0, offColor1);
-        gradient.setColorAt(1, offColor2);
-    }*/
     painter.setBrush(gradient);
     painter.drawEllipse(QPointF(0,0), 400, 400);
 }
