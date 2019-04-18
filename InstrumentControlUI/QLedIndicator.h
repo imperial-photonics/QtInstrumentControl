@@ -37,7 +37,7 @@ class QLedIndicator : public QWidget
 {
     Q_OBJECT
     public:
-        QLedIndicator(QWidget *parent);
+        QLedIndicator(QWidget *parent = 0);
         void setStatus(LedStatus ledStatus);
         LedStatus getStatus();
     protected:
