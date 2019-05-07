@@ -20,7 +20,7 @@
 
 #include <QPainter>
 
-#include "qledindicator.h"
+#include "QLedIndicator.h"
 
 const qreal QLedIndicator::scaledSize = 1000; /* Visual Studio static const mess */
 
