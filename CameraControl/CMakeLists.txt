@@ -11,11 +11,7 @@ cmake_policy(SET CMP0043 NEW)
 find_package(OpenGL REQUIRED)
 find_package(CUDA 5.5 QUIET)
 
-find_package(Qt5Widgets REQUIRED)
-find_package(Qt5Declarative REQUIRED)
-find_package(Qt5PrintSupport REQUIRED)
-find_package(Qt5OpenGL REQUIRED)
-
+find_package(Qt5 COMPONENTS Widgets Declarative PrintSupport OpenGL REQUIRED)
 find_package(OpenCV REQUIRED)
 
 set(CMAKE_AUTOMOC ON)

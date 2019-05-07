@@ -8,12 +8,7 @@ cmake_policy(SET CMP0020 NEW)
 cmake_policy(SET CMP0043 NEW)
 
 
-find_package(Qt5Widgets REQUIRED)
-find_package(Qt5Declarative REQUIRED)
-find_package(Qt5PrintSupport REQUIRED)
-find_package(Qt5OpenGL REQUIRED)
-find_package(Qt5SerialPort REQUIRED)
-find_package(Qt5Designer REQUIRED)
+find_package(Qt5 COMPONENTS Widgets Declarative PrintSupport OpenGL SerialPort REQUIRED)
 
 set(CMAKE_AUTOMOC ON)
 cmake_policy(SET CMP0071 OLD)
